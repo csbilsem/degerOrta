@@ -28,6 +28,10 @@ python3 -m http.server 8000
 | Esc | Duraklat |
 | F3 | Bilgi ekranı (açıkken 1-4 ve 0 tuşları bölgeleri renklendirmeyi dener) |
 
+### Tablet / telefon (dokunmatik)
+
+Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki kol yürütür, ekranı kaydırmak etrafa baktırır, **Kır / Koy / Zıpla** düğmeleri ve alttaki blok kutuları dokunarak kullanılır; **II** duraklatır.
+
 ## Aşamalar
 
 - [x] **1. aşama:** blok dünyası, hareket ve kamera

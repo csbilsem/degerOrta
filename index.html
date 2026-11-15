@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Değerler Köyü</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -34,6 +34,14 @@
       <span><kbd>Esc</kbd> Duraklat</span>
     </div>
   </div>
+  <div id="dokunmatik" class="gizli">
+    <div id="kol"><div id="kol-topuz"></div></div>
+    <button id="d-duraklat" class="d-tus" aria-label="Duraklat">II</button>
+    <button id="d-kamera" class="d-tus">Kamera</button>
+    <button id="d-koy" class="d-tus">Koy</button>
+    <button id="d-kir" class="d-tus">Kır</button>
+    <button id="d-zipla" class="d-tus">Zıpla</button>
+  </div>
   <pre id="bilgi" class="gizli"></pre>
 
   <div id="giris">
@@ -41,7 +49,15 @@
       <h1>Değerler Köyü</h1>
       <p class="alt-baslik">Doğru sözlülük · Merhamet · Adap · Vatan sevgisi</p>
       <p>Gri köye hoş geldin! Köyü dolaş, dört bölgeyi keşfet. Güzel davranışlarınla köy yeniden renklenecek.</p>
-      <ul class="tuslar">
+      <ul class="tuslar dokunmatik-yardim gizli">
+        <li><b>Sol kol:</b> yürü</li>
+        <li><b>Ekranı kaydır:</b> etrafa bak</li>
+        <li><b>Kır / Koy:</b> blok kır, yerleştir</li>
+        <li><b>Zıpla:</b> zıpla</li>
+        <li><b>Alttaki kutular:</b> blok seç</li>
+        <li><b>II:</b> duraklat</li>
+      </ul>
+      <ul class="tuslar klavye-yardim">
         <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> yürü</li>
         <li><kbd>Fare</kbd> etrafa bak</li>
         <li><kbd>Boşluk</kbd> zıpla</li>

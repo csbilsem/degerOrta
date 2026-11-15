@@ -7,8 +7,13 @@ html, body {
   font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
   color: #fff;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  overscroll-behavior: none;
 }
-#oyun { display: block; width: 100vw; height: 100vh; }
+#oyun { position: fixed; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
 .gizli { display: none !important; }
 
 kbd {
@@ -158,3 +163,53 @@ kbd {
 }
 #mesaj.gorunur { opacity: 1; }
 @media (max-width: 760px) { #yardim { display: none; } }
+
+/* ---------- Dokunmatik kumandalar (tablet / telefon) ---------- */
+#envanter { pointer-events: auto; }
+#dokunmatik { position: fixed; inset: 0; pointer-events: none; }
+#kol {
+  position: absolute; left: max(22px, env(safe-area-inset-left)); bottom: 96px;
+  width: 132px; height: 132px; border-radius: 50%;
+  background: rgba(30, 36, 46, 0.45);
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  pointer-events: auto; touch-action: none;
+}
+#kol-topuz {
+  position: absolute; left: 50%; top: 50%;
+  width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+}
+.d-tus {
+  position: absolute;
+  width: 78px; height: 78px; border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.45);
+  background: rgba(30, 36, 46, 0.55);
+  color: #fff; font: bold 16px inherit;
+  pointer-events: auto; touch-action: none;
+  -webkit-user-select: none; user-select: none;
+}
+.d-tus.basili { background: rgba(255, 255, 255, 0.4); }
+#d-zipla { right: max(22px, env(safe-area-inset-right)); bottom: 96px; }
+#d-kir { right: calc(max(22px, env(safe-area-inset-right)) + 90px); bottom: 122px; }
+#d-koy { right: max(22px, env(safe-area-inset-right)); bottom: 186px; }
+#d-kamera { right: 14px; top: 14px; width: 84px; height: 44px; border-radius: 12px; font-size: 14px; }
+#d-duraklat { right: 108px; top: 14px; width: 48px; height: 44px; border-radius: 12px; }
+body.dokunmatik #yardim, body.dokunmatik #surukle-ipucu { display: none !important; }
+body.dokunmatik .yuva { width: 46px; height: 46px; }
+body.dokunmatik .yuva .kup { left: 8px; top: 8px; }
+@media (max-width: 700px) {
+  body.dokunmatik .yuva { width: 34px; height: 34px; }
+  body.dokunmatik .yuva .kup { left: 5px; top: 5px; width: 18px; height: 18px; }
+  body.dokunmatik .yuva .tus { display: none; }
+  .kart h1 { font-size: 30px; }
+}
+@media (max-height: 520px) {
+  .kart { padding: 14px 20px 16px; }
+  .kart h1 { font-size: 26px; }
+  .kart p { margin: 6px 0; font-size: 14px; }
+  .tuslar { margin: 8px 0 12px; gap: 4px 14px; font-size: 13px; }
+  #kol, #d-zipla { bottom: 70px; }
+  #d-kir { bottom: 90px; }
+  #d-koy { bottom: 156px; }
+}

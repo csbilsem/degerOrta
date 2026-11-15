@@ -50,6 +50,13 @@ export class Envanter {
       this.yuvalar.push(i < 4 ? { id: DEGER_BLOKLARI[i], adet: 0, sabit: true } : { id: 0, adet: 0 });
     }
     this.secili = 4;
+    // Yuvaya dokunarak / tıklayarak seçim (tablet için)
+    kok.addEventListener('pointerdown', (e) => {
+      const el = e.target.closest('.yuva');
+      if (!el) return;
+      e.preventDefault();
+      this.sec(Number(el.dataset.i));
+    });
     this.ciz();
   }
 
@@ -89,6 +96,7 @@ export class Envanter {
     this.yuvalar.forEach((y, i) => {
       const el = document.createElement('div');
       el.className = 'yuva';
+      el.dataset.i = i;
       if (i === this.secili) el.classList.add('secili');
       if (y.sabit) el.classList.add('deger', y.adet > 0 ? 'var' : 'bos-deger');
       let ic = `<span class="tus">${i + 1}</span>`;

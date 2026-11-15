@@ -76,18 +76,38 @@ let oynuyor = false;
 let surukleModu = false; // fare kilidi kullanılamıyorsa: basılı tutup sürükleyerek bakılır
 let hataAyiklama = false;
 
+// Dokunmatik cihazlarda (iPad, telefon) fare kilidi yoktur; ekran kumandaları kullanılır.
+const dokunmatik =
+  !tuval.requestPointerLock || window.matchMedia('(pointer: coarse)').matches;
+document.body.classList.toggle('dokunmatik', dokunmatik);
+document.querySelector('.dokunmatik-yardim').classList.toggle('gizli', !dokunmatik);
+document.querySelector('.klavye-yardim').classList.toggle('gizli', dokunmatik);
+
 function baslat() {
-  const istek = tuval.requestPointerLock?.();
-  if (istek && istek.catch) istek.catch(surukleModunaGec);
+  if (dokunmatik) return surukleModunaGec();
+  try {
+    const istek = tuval.requestPointerLock();
+    if (istek && istek.catch) istek.catch(surukleModunaGec);
+  } catch {
+    surukleModunaGec();
+  }
+}
+function duraklat() {
+  oynuyor = false;
+  surukleModu = false;
+  oyuncu.analog.x = oyuncu.analog.y = 0;
+  arayuzuGuncelle();
 }
 function surukleModunaGec() {
   surukleModu = true;
   oynuyor = true;
+  oynandi = true;
   arayuzuGuncelle();
 }
 function arayuzuGuncelle() {
   $('giris').classList.toggle('gizli', oynuyor);
   $('hud').classList.toggle('gizli', !oynuyor);
+  $('dokunmatik').classList.toggle('gizli', !(oynuyor && dokunmatik));
   $('surukle-ipucu').classList.toggle('gizli', !surukleModu);
   if (!oynuyor) {
     oyuncu.tuslar.clear();
@@ -156,9 +176,7 @@ document.addEventListener('keydown', (e) => {
   if (!oynuyor) return;
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
   if (e.code === 'Escape' && surukleModu) {
-    oynuyor = false;
-    surukleModu = false;
-    arayuzuGuncelle();
+    duraklat();
     return;
   }
   if (e.code === 'KeyV' && !e.repeat) oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis;
@@ -173,6 +191,90 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('keyup', (e) => oyuncu.tuslar.delete(e.code));
 window.addEventListener('blur', () => oyuncu.tuslar.clear());
+
+// ---------- Dokunmatik kumandalar ----------
+{
+  const pasifDegil = { passive: false };
+  // Ekranı kaydırarak bakış
+  const bakis = new Map();
+  tuval.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    for (const d of e.changedTouches) bakis.set(d.identifier, { x: d.clientX, y: d.clientY });
+  }, pasifDegil);
+  tuval.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    for (const d of e.changedTouches) {
+      const o = bakis.get(d.identifier);
+      if (!o) continue;
+      if (oynuyor) oyuncu.bak((d.clientX - o.x) * 2.2, (d.clientY - o.y) * 2.2);
+      o.x = d.clientX;
+      o.y = d.clientY;
+    }
+  }, pasifDegil);
+  const bakisBitti = (e) => {
+    for (const d of e.changedTouches) bakis.delete(d.identifier);
+  };
+  tuval.addEventListener('touchend', bakisBitti);
+  tuval.addEventListener('touchcancel', bakisBitti);
+
+  // Yürüme kolu
+  const kol = $('kol');
+  const topuz = $('kol-topuz');
+  let kolDokunus = null;
+  const kolGuncelle = (d) => {
+    const r = kol.getBoundingClientRect();
+    const yari = r.width / 2;
+    let x = (d.clientX - (r.left + yari)) / (yari * 0.75);
+    let y = (d.clientY - (r.top + yari)) / (yari * 0.75);
+    const boy = Math.hypot(x, y);
+    if (boy > 1) {
+      x /= boy;
+      y /= boy;
+    }
+    oyuncu.analog.x = Math.abs(x) < 0.12 ? 0 : x;
+    oyuncu.analog.y = Math.abs(y) < 0.12 ? 0 : y;
+    topuz.style.transform = `translate(${x * yari * 0.6}px, ${y * yari * 0.6}px)`;
+  };
+  const kolBirak = () => {
+    kolDokunus = null;
+    oyuncu.analog.x = oyuncu.analog.y = 0;
+    topuz.style.transform = '';
+  };
+  kol.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    kolDokunus = e.changedTouches[0].identifier;
+    kolGuncelle(e.changedTouches[0]);
+  }, pasifDegil);
+  kol.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    for (const d of e.changedTouches) if (d.identifier === kolDokunus) kolGuncelle(d);
+  }, pasifDegil);
+  for (const tur of ['touchend', 'touchcancel'])
+    kol.addEventListener(tur, (e) => {
+      for (const d of e.changedTouches) if (d.identifier === kolDokunus) kolBirak();
+    });
+
+  // Düğmeler: pointer olayları hem parmakla hem fareyle çalışır
+  const dugme = (id, bas, birak) => {
+    const el = $(id);
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      el.classList.add('basili');
+      bas();
+    });
+    for (const tur of ['pointerup', 'pointercancel', 'pointerleave'])
+      el.addEventListener(tur, () => {
+        el.classList.remove('basili');
+        if (birak) birak();
+      });
+    el.addEventListener('touchstart', (e) => e.preventDefault(), pasifDegil);
+  };
+  dugme('d-zipla', () => oyuncu.tuslar.add('Space'), () => oyuncu.tuslar.delete('Space'));
+  dugme('d-kir', () => etkilesim.kir());
+  dugme('d-koy', () => etkilesim.yerlestir());
+  dugme('d-kamera', () => (oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis));
+  dugme('d-duraklat', () => duraklat());
+}
 
 function boyutlandir() {
   const g = window.innerWidth;

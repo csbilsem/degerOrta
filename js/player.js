@@ -20,6 +20,7 @@ export class Player {
     this.yerde = false;
     this.ucuncuSahis = false;
     this.tuslar = new Set();
+    this.analog = { x: 0, y: 0 }; // dokunmatik kumanda kolu (-1..1)
     this.adim = 0;
     this.avatar = this._avatarOlustur();
     this.avatar.visible = false;
@@ -117,6 +118,8 @@ export class Player {
       if (t.has('KeyS') || t.has('ArrowDown')) ileri -= 1;
       if (t.has('KeyD') || t.has('ArrowRight')) yana += 1;
       if (t.has('KeyA') || t.has('ArrowLeft')) yana -= 1;
+      ileri -= this.analog.y;
+      yana += this.analog.x;
     }
     const hareketli = ileri !== 0 || yana !== 0;
     const surat = etkin && (t.has('ShiftLeft') || t.has('ShiftRight')) ? KOSMA : YURUME;
@@ -125,7 +128,7 @@ export class Player {
     let hx = 0;
     let hz = 0;
     if (hareketli) {
-      const boy = Math.hypot(ileri, yana);
+      const boy = Math.max(1, Math.hypot(ileri, yana));
       hx = ((-sin * ileri + cos * yana) / boy) * surat;
       hz = ((-cos * ileri - sin * yana) / boy) * surat;
     }
