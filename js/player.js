@@ -72,6 +72,24 @@ export class Player {
     return false;
   }
 
+  gozKonumu() {
+    return new THREE.Vector3(this.konum.x, this.konum.y + GOZ, this.konum.z);
+  }
+
+  bakisYonu() {
+    return new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(this.egim, this.yon, 0, 'YXZ'));
+  }
+
+  // Verilen blok hücresi oyuncunun gövdesiyle kesişiyor mu?
+  hucreyleKesisir(x, y, z) {
+    const p = this.konum;
+    return (
+      x + 1 > p.x - GENISLIK / 2 && x < p.x + GENISLIK / 2 &&
+      y + 1 > p.y && y < p.y + BOY &&
+      z + 1 > p.z - GENISLIK / 2 && z < p.z + GENISLIK / 2
+    );
+  }
+
   // Tek eksende ilerler; çarparsa bloğun yüzüne yaslar. Çarptıysa true döner.
   _ilerle(eksen, miktar) {
     if (miktar === 0) return false;

@@ -21,6 +21,9 @@ python3 -m http.server 8000
 | Fare | Etrafa bak |
 | Boşluk | Zıpla (tek blokluk basamaklar kendiliğinden çıkılır) |
 | Shift | Koş |
+| Sol tık | Hedeflenen bloğu kır (çantaya eklenir) |
+| Sağ tık | Seçili bloğu yerleştir |
+| 1–9 / fare tekerleği | Çantadan blok seç |
 | V | Birinci / üçüncü şahıs kamera |
 | Esc | Duraklat |
 | F3 | Bilgi ekranı (açıkken 1-4 ve 0 tuşları bölgeleri renklendirmeyi dener) |
@@ -28,7 +31,7 @@ python3 -m http.server 8000
 ## Aşamalar
 
 - [x] **1. aşama:** blok dünyası, hareket ve kamera
-- [ ] Blok kırma / yerleştirme
+- [x] **2. aşama:** blok kırma / yerleştirme, blok çantası
 - [ ] Karakterler ve konuşma (E)
 - [ ] Görevler, ahlaki ikilemler, değer puanı ve değer blokları
 - [ ] Anıt inşası ve köyün renklenmesi
@@ -40,5 +43,6 @@ python3 -m http.server 8000
 - `js/world.js` — blok verisi, parça (chunk) örme, bölge renklendirme
 - `js/worldgen.js` — köyün ve dört bölgenin kurulumu
 - `js/player.js` — hareket, çarpışma, kamera
+- `js/interact.js` — hedefleme, blok kırma/yerleştirme, blok çantası
 - `js/main.js` — ana döngü, girdiler, gösterge
 - `vendor/` — Three.js (MIT lisanslı)

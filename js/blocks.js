@@ -29,6 +29,10 @@ export const B = {
   CICEK_MOR: 24,
   SANDIK: 25,
   ACIK_TAS: 26,
+  DEGER_DOGRULUK: 27,
+  DEGER_MERHAMET: 28,
+  DEGER_ADAP: 29,
+  DEGER_VATAN: 30,
 };
 
 // kati: oyuncu içinden geçemez. opak: arkasındaki yüzleri gizler.
@@ -62,6 +66,20 @@ BLOKLAR[B.CICEK_SARI] = T('Çiçek tarhı (sarı)', 0xf7d038);
 BLOKLAR[B.CICEK_MOR] = T('Çiçek tarhı (mor)', 0x9b6be0);
 BLOKLAR[B.SANDIK] = T('Sandık', 0xa9783f);
 BLOKLAR[B.ACIK_TAS] = T('Açık taş', 0xb9bfc4);
+
+
+// Değer blokları: görevlerde doğru kararlarla kazanılır; köy griyken bile renklidir.
+BLOKLAR[B.DEGER_DOGRULUK] = T('Doğruluk bloğu', 0x2f7fe0);
+BLOKLAR[B.DEGER_MERHAMET] = T('Merhamet bloğu', 0xe8548f);
+BLOKLAR[B.DEGER_ADAP] = T('Adap bloğu', 0x8e5bd6);
+BLOKLAR[B.DEGER_VATAN] = T('Vatan bloğu', 0xe02a2a);
+export const DEGER_BLOKLARI = [B.DEGER_DOGRULUK, B.DEGER_MERHAMET, B.DEGER_ADAP, B.DEGER_VATAN];
+for (const id of DEGER_BLOKLARI) BLOKLAR[id].deger = true;
+
+// Kırılamayan bloklar ve oyuncuya gösterilecek açıklama
+BLOKLAR[B.MERMER].kirilmaz = 'Anıt kaidesi kırılamaz; anıtını bunun üzerine inşa et.';
+for (const id of [B.DIREK, B.BAYRAK_KIRMIZI, B.BAYRAK_BEYAZ])
+  BLOKLAR[id].kirilmaz = 'Bayrağımız değerlidir; ona zarar verilmez.';
 
 export const katiMi = (id) => BLOKLAR[id].kati;
 export const opakMi = (id) => BLOKLAR[id].opak;

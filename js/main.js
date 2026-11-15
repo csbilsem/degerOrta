@@ -2,6 +2,8 @@ import * as THREE from '../vendor/three.module.min.js';
 import { BOLGE_ADLARI } from './world.js';
 import { koyuOlustur } from './worldgen.js';
 import { Player } from './player.js';
+import { B } from './blocks.js';
+import { Envanter, Etkilesim } from './interact.js';
 
 const $ = (id) => document.getElementById(id);
 const tuval = $('oyun');
@@ -26,6 +28,21 @@ const oyuncu = new Player(dunya, kamera);
 const b = dunya.baslangic;
 oyuncu.isinla(b.x, b.y, b.z, b.yon);
 sahne.add(oyuncu.avatar);
+
+// ---------- Envanter ve blok etkileşimi ----------
+let mesajZamanlayici = 0;
+function mesajGoster(metin) {
+  const kutu = $('mesaj');
+  kutu.textContent = metin;
+  kutu.classList.add('gorunur');
+  clearTimeout(mesajZamanlayici);
+  mesajZamanlayici = setTimeout(() => kutu.classList.remove('gorunur'), 3200);
+}
+const envanter = new Envanter($('envanter'), $('secili-ad'));
+envanter.ekle(B.TAHTA, 12); // başlangıç malzemesi
+envanter.ekle(B.TAS, 12);
+const etkilesim = new Etkilesim(dunya, oyuncu, envanter, mesajGoster);
+sahne.add(etkilesim.cerceve);
 
 // ---------- Bloklu bulutlar ----------
 const bulutlar = new THREE.Group();
@@ -99,7 +116,35 @@ document.addEventListener('mousemove', (e) => {
     oyuncu.bak(e.movementX, e.movementY);
   }
 });
-tuval.addEventListener('contextmenu', (e) => e.preventDefault());
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Sol tık kırar, sağ tık yerleştirir. Sürükleme modunda sol tuş bakmak için de
+// kullanıldığından, kırma ancak fare neredeyse hiç kaymadan bırakılırsa yapılır.
+let basisX = 0;
+let basisY = 0;
+document.addEventListener('mousedown', (e) => {
+  if (!oynuyor || e.target !== tuval) return;
+  const kilitli = document.pointerLockElement === tuval;
+  if (e.button === 2) etkilesim.yerlestir();
+  else if (e.button === 0) {
+    if (kilitli) etkilesim.kir();
+    else {
+      basisX = e.clientX;
+      basisY = e.clientY;
+    }
+  }
+});
+document.addEventListener('mouseup', (e) => {
+  if (!oynuyor || !surukleModu || e.button !== 0 || e.target !== tuval) return;
+  if (Math.hypot(e.clientX - basisX, e.clientY - basisY) < 5) etkilesim.kir();
+});
+document.addEventListener(
+  'wheel',
+  (e) => {
+    if (oynuyor) envanter.sec(envanter.secili + Math.sign(e.deltaY));
+  },
+  { passive: true }
+);
 
 document.addEventListener('keydown', (e) => {
   if (e.code === 'F3') {
@@ -121,6 +166,8 @@ document.addEventListener('keydown', (e) => {
   if (hataAyiklama && !e.repeat && /^Digit[0-4]$/.test(e.code)) {
     const no = Number(e.code.slice(5));
     bolgeyiRenklendir(no, hedefDoygunluk[no] < 1);
+  } else if (!e.repeat && /^Digit[1-9]$/.test(e.code)) {
+    envanter.sec(Number(e.code.slice(5)) - 1);
   }
   oyuncu.tuslar.add(e.code);
 });
@@ -160,6 +207,7 @@ function kare(simdi) {
   onceki = simdi;
 
   oyuncu.guncelle(dt, oynuyor);
+  etkilesim.guncelle(oynuyor);
 
   // Renklenme geçişi ve gökyüzü
   const d = dunya.doygunluk.value;
@@ -204,4 +252,4 @@ function kare(simdi) {
 requestAnimationFrame(kare);
 
 // Sonraki aşamalar ve denemeler için dışa açılan nesne
-window.degerlerKoyu = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec };
+window.degerlerKoyu = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim };

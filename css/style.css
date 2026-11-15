@@ -55,21 +55,22 @@ kbd {
 }
 #bolge-bildirim.gorunur { opacity: 1; }
 #surukle-ipucu {
-  position: absolute; left: 50%; top: 12px; transform: translateX(-50%);
+  position: absolute; left: 14px; top: 84px;
   padding: 6px 12px; border-radius: 8px;
   background: rgba(30, 36, 46, 0.6); font-size: 13px;
 }
 #yardim {
-  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
-  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-  width: max-content; max-width: 96vw;
+  position: absolute; right: 12px; top: 12px;
+  display: flex; gap: 6px 16px; flex-wrap: wrap; justify-content: flex-end;
+  max-width: calc(100vw - 330px);
   padding: 7px 14px;
   border-radius: 10px;
   background: rgba(30, 36, 46, 0.6);
   font-size: 13px;
+  opacity: 0.9;
 }
 #bilgi {
-  position: fixed; right: 12px; top: 12px; margin: 0;
+  position: fixed; right: 12px; top: 96px; margin: 0;
   padding: 8px 12px; border-radius: 8px;
   background: rgba(0, 0, 0, 0.6);
   font: 12px/1.5 ui-monospace, Consolas, monospace;
@@ -111,3 +112,49 @@ kbd {
 }
 #basla:hover { background: #37a295; }
 #basla:active { transform: translateY(2px); border-bottom-width: 3px; }
+
+/* ---------- Envanter çubuğu ---------- */
+#envanter-alani {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+#secili-ad {
+  padding: 3px 12px; border-radius: 8px;
+  background: rgba(30, 36, 46, 0.6);
+  font-size: 15px; font-weight: bold; min-height: 1.6em;
+}
+#envanter {
+  display: flex; gap: 5px; padding: 6px;
+  border-radius: 12px;
+  background: rgba(30, 36, 46, 0.7);
+}
+.yuva {
+  position: relative;
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+.yuva.secili { border-color: #fff; background: rgba(255, 255, 255, 0.22); }
+.yuva.deger { border-style: dashed; }
+.yuva.deger.secili, .yuva.deger.var { border-style: solid; }
+.yuva .tus { position: absolute; left: 4px; top: 1px; font-size: 11px; opacity: 0.75; }
+.yuva .adet {
+  position: absolute; right: 4px; bottom: 1px;
+  font-size: 14px; font-weight: bold; text-shadow: 0 1px 2px #000;
+}
+.yuva .kup {
+  position: absolute; left: 11px; top: 11px; width: 24px; height: 24px;
+  border-radius: 3px;
+  box-shadow: inset -5px -5px 0 rgba(0, 0, 0, 0.22), inset 3px 3px 0 rgba(255, 255, 255, 0.25);
+}
+.yuva.bos-deger .kup { opacity: 0.35; }
+#mesaj {
+  position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%);
+  max-width: 90vw; padding: 8px 18px; border-radius: 10px;
+  background: rgba(30, 36, 46, 0.8);
+  font-size: 16px; text-align: center;
+  opacity: 0; transition: opacity 0.35s;
+}
+#mesaj.gorunur { opacity: 1; }
+@media (max-width: 760px) { #yardim { display: none; } }

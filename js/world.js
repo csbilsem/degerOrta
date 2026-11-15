@@ -41,7 +41,8 @@ export class World {
     this.parcalar = new Map(); // "px,pz" -> Mesh
     this.grup = new THREE.Group();
     // Bölge renk doygunlukları (0 = gri, 1 = tam renk); shader'a gider.
-    this.doygunluk = { value: new Float32Array(5).fill(0.12) };
+    // 6. değer (dizin 5) hep 1'dir: değer blokları her zaman renklidir.
+    this.doygunluk = { value: new Float32Array([0.12, 0.12, 0.12, 0.12, 0.12, 1]) };
     this.malzeme = this._malzemeOlustur();
     this._renkler = BLOKLAR.map((b) => new THREE.Color(b.renk));
   }
@@ -102,7 +103,7 @@ export class World {
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uDoygunluk = doygunluk;
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nattribute float bolge;\nuniform float uDoygunluk[5];')
+        .replace('#include <common>', '#include <common>\nattribute float bolge;\nuniform float uDoygunluk[6];')
         .replace(
           '#include <color_vertex>',
           `#include <color_vertex>
@@ -118,15 +119,18 @@ export class World {
       for (let px = 0; px < this.W / PARCA; px++) this.parcaOr(px, pz);
   }
 
-  // Bir bloğun değiştiği yerdeki parçayı (ve sınırdaysa komşusunu) yeniden örer
+  // Bir blok değişince onu içeren ve ona komşu parçaları yeniden örer
   blokDegisti(x, z) {
-    const px = Math.floor(x / PARCA);
-    const pz = Math.floor(z / PARCA);
-    this.parcaOr(px, pz);
-    if (x % PARCA === 0) this.parcaOr(px - 1, pz);
-    if (x % PARCA === PARCA - 1) this.parcaOr(px + 1, pz);
-    if (z % PARCA === 0) this.parcaOr(px, pz - 1);
-    if (z % PARCA === PARCA - 1) this.parcaOr(px, pz + 1);
+    const yapilan = new Set();
+    for (let dz = -1; dz <= 1; dz++)
+      for (let dx = -1; dx <= 1; dx++) {
+        const px = Math.floor((x + dx) / PARCA);
+        const pz = Math.floor((z + dz) / PARCA);
+        const a = px + ',' + pz;
+        if (yapilan.has(a)) continue;
+        yapilan.add(a);
+        this.parcaOr(px, pz);
+      }
   }
 
   parcaOr(px, pz) {
@@ -154,7 +158,7 @@ export class World {
           if (id === B.HAVA) continue;
           const r = this._renkler[id];
           const oynama = 0.94 + karma(x, y, z) * 0.12;
-          const blg = this.bolge(x, z);
+          const blg = BLOKLAR[id].deger ? 5 : this.bolge(x, z);
           for (const f of YUZLER) {
             n[0] = n[1] = n[2] = 0;
             n[f.a] = f.s;
