@@ -4,6 +4,9 @@ import { koyuOlustur } from './worldgen.js';
 import { Player } from './player.js';
 import { B } from './blocks.js';
 import { Envanter, Etkilesim } from './interact.js';
+import { Karakterler } from './npc.js';
+import { Diyalog } from './dialog.js';
+import { KARAKTERLER } from './data/karakterler.js';
 
 const $ = (id) => document.getElementById(id);
 const tuval = $('oyun');
@@ -18,7 +21,7 @@ sahne.background = GRI_GOK.clone();
 sahne.fog = new THREE.Fog(sahne.background, 45, 120);
 sahne.add(new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 2.2));
 
-const kamera = new THREE.PerspectiveCamera(72, 1, 0.1, 300);
+const kamera = new THREE.PerspectiveCamera(72, 1, 0.1, 150);
 
 const dunya = koyuOlustur();
 dunya.tumunuOr();
@@ -43,6 +46,28 @@ envanter.ekle(B.TAHTA, 12); // başlangıç malzemesi
 envanter.ekle(B.TAS, 12);
 const etkilesim = new Etkilesim(dunya, oyuncu, envanter, mesajGoster);
 sahne.add(etkilesim.cerceve);
+
+// ---------- Karakterler ve konuşma ----------
+const karakterler = new Karakterler(dunya, KARAKTERLER);
+sahne.add(karakterler.grup);
+const diyalog = new Diyalog($('diyalog'));
+let yakinKarakter = null;
+let konusulan = null;
+diyalog.kapaninca = () => {
+  konusulan = null;
+  $('hud').classList.remove('konusuyor');
+  document.body.classList.remove('konusuyor');
+};
+function konus() {
+  if (diyalog.acik) return diyalog.ilerle();
+  if (!yakinKarakter) return;
+  konusulan = yakinKarakter;
+  oyuncu.tuslar.clear();
+  oyuncu.analog.x = oyuncu.analog.y = 0;
+  $('hud').classList.add('konusuyor');
+  document.body.classList.add('konusuyor');
+  diyalog.baslat(konusulan);
+}
 
 // ---------- Bloklu bulutlar ----------
 const bulutlar = new THREE.Group();
@@ -128,7 +153,7 @@ let oynandi = false;
 if (!tuval.requestPointerLock || window.matchMedia('(pointer: coarse)').matches) dokunmatikAc();
 
 $('basla').addEventListener('click', baslat);
-window.degerlerKoyuHazir = true;
+window.kalbinKahramanlariHazir = true;
 document.addEventListener('pointerlockchange', () => {
   const kilitli = document.pointerLockElement === tuval;
   if (kilitli) {
@@ -144,6 +169,7 @@ document.addEventListener('pointerlockerror', surukleModunaGec);
 
 document.addEventListener('mousemove', (e) => {
   if (!oynuyor) return;
+  if (diyalog.acik) return;
   if (document.pointerLockElement === tuval || (surukleModu && e.buttons & 1)) {
     oyuncu.bak(e.movementX, e.movementY);
   }
@@ -157,6 +183,10 @@ let basisY = 0;
 document.addEventListener('mousedown', (e) => {
   if (!oynuyor || e.target !== tuval) return;
   const kilitli = document.pointerLockElement === tuval;
+  if (diyalog.acik) {
+    if (e.button === 0) diyalog.ilerle();
+    return;
+  }
   if (e.button === 2) etkilesim.yerlestir();
   else if (e.button === 0) {
     if (kilitli) etkilesim.kir();
@@ -167,13 +197,15 @@ document.addEventListener('mousedown', (e) => {
   }
 });
 document.addEventListener('mouseup', (e) => {
-  if (!oynuyor || !surukleModu || e.button !== 0 || e.target !== tuval) return;
+  if (!oynuyor || !surukleModu || e.button !== 0 || e.target !== tuval || diyalog.acik) return;
   if (Math.hypot(e.clientX - basisX, e.clientY - basisY) < 5) etkilesim.kir();
 });
 document.addEventListener(
   'wheel',
   (e) => {
-    if (oynuyor) envanter.sec(envanter.secili + Math.sign(e.deltaY));
+    if (!oynuyor) return;
+    if (diyalog.acik) diyalog.secimiKaydir(Math.sign(e.deltaY));
+    else envanter.sec(envanter.secili + Math.sign(e.deltaY));
   },
   { passive: true }
 );
@@ -191,6 +223,15 @@ document.addEventListener('keydown', (e) => {
     duraklat();
     return;
   }
+  if (diyalog.acik) {
+    if (e.repeat) return;
+    if (e.code === 'KeyE' || e.code === 'Enter' || e.code === 'Space') diyalog.ilerle();
+    else if (e.code === 'KeyW' || e.code === 'ArrowUp') diyalog.secimiKaydir(-1);
+    else if (e.code === 'KeyS' || e.code === 'ArrowDown') diyalog.secimiKaydir(1);
+    else if (/^(Digit|Numpad)[1-9]$/.test(e.code)) diyalog.sec(Number(e.code.slice(-1)) - 1);
+    return;
+  }
+  if (e.code === 'KeyE' && !e.repeat) return konus();
   if (e.code === 'KeyV' && !e.repeat) oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis;
   // Deneme kısayolu (yalnızca F3 açıkken): 1-4 bölgeleri, 0 meydanı renklendirir
   if (hataAyiklama && !e.repeat && /^Digit[0-4]$/.test(e.code)) {
@@ -218,7 +259,7 @@ window.addEventListener('blur', () => oyuncu.tuslar.clear());
     for (const d of e.changedTouches) {
       const o = bakis.get(d.identifier);
       if (!o) continue;
-      if (oynuyor) oyuncu.bak((d.clientX - o.x) * 2.2, (d.clientY - o.y) * 2.2);
+      if (oynuyor && !diyalog.acik) oyuncu.bak((d.clientX - o.x) * 2.2, (d.clientY - o.y) * 2.2);
       o.x = d.clientX;
       o.y = d.clientY;
     }
@@ -286,6 +327,7 @@ window.addEventListener('blur', () => oyuncu.tuslar.clear());
   dugme('d-koy', () => etkilesim.yerlestir());
   dugme('d-kamera', () => (oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis));
   dugme('d-duraklat', () => duraklat());
+  dugme('d-konus', () => konus());
 }
 
 function boyutlandir() {
@@ -320,8 +362,21 @@ function kare(simdi) {
   const dt = Math.min(0.05, (simdi - onceki) / 1000);
   onceki = simdi;
 
-  oyuncu.guncelle(dt, oynuyor);
-  etkilesim.guncelle(oynuyor);
+  const serbest = oynuyor && !diyalog.acik;
+  oyuncu.guncelle(dt, serbest);
+  etkilesim.guncelle(serbest);
+  karakterler.guncelle(dt, oyuncu, konusulan);
+  const yeniYakin = serbest ? karakterler.yakindaki(oyuncu) : null;
+  if (yeniYakin !== yakinKarakter) {
+    yakinKarakter = yeniYakin;
+    const ipucu = $('konus-ipucu');
+    ipucu.classList.toggle('gizli', !yakinKarakter);
+    $('d-konus').classList.toggle('gizli', !yakinKarakter);
+    if (yakinKarakter) {
+      const ek = yakinKarakter.kedi ? `${yakinKarakter.ad}'a bak` : `${yakinKarakter.ad} ile konuş`;
+      ipucu.textContent = dokunmatik ? ek : `E — ${ek}`;
+    }
+  }
 
   // Renklenme geçişi ve gökyüzü
   const d = dunya.doygunluk.value;
@@ -366,4 +421,4 @@ function kare(simdi) {
 requestAnimationFrame(kare);
 
 // Sonraki aşamalar ve denemeler için dışa açılan nesne
-window.degerlerKoyu = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim };
+window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus };

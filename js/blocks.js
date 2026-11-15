@@ -70,7 +70,7 @@ BLOKLAR[B.ACIK_TAS] = T('Açık taş', 0xb9bfc4);
 
 // Değer blokları: görevlerde doğru kararlarla kazanılır; köy griyken bile renklidir.
 BLOKLAR[B.DEGER_DOGRULUK] = T('Doğruluk bloğu', 0x2f7fe0);
-BLOKLAR[B.DEGER_MERHAMET] = T('Merhamet bloğu', 0xe8548f);
+BLOKLAR[B.DEGER_MERHAMET] = T('Merhamet bloğu', 0x22b455);
 BLOKLAR[B.DEGER_ADAP] = T('Adap bloğu', 0x8e5bd6);
 BLOKLAR[B.DEGER_VATAN] = T('Vatan bloğu', 0xe02a2a);
 export const DEGER_BLOKLARI = [B.DEGER_DOGRULUK, B.DEGER_MERHAMET, B.DEGER_ADAP, B.DEGER_VATAN];

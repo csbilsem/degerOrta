@@ -221,3 +221,59 @@ body.dokunmatik .yuva .kup { left: 8px; top: 8px; }
   user-select: text; -webkit-user-select: text;
 }
 .surum { margin: 12px 0 0; font-size: 12px; opacity: 0.55; }
+
+/* ---------- Konuşma ---------- */
+.ilk-adim { margin: 8px 0 0; padding: 8px 12px; border-radius: 10px; background: #e6f3f0; color: #1f6a61; }
+#konus-ipucu {
+  position: absolute; left: 50%; top: 58%; transform: translateX(-50%);
+  padding: 8px 18px; border-radius: 10px;
+  background: rgba(30, 36, 46, 0.8);
+  font-size: 18px; font-weight: bold; white-space: nowrap;
+}
+#diyalog {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  width: min(900px, calc(100vw - 28px));
+  padding: 30px 28px 14px;
+  border-radius: 16px;
+  border: 3px solid #2f8f83;
+  background: rgba(251, 247, 238, 0.97);
+  color: #2b2f36;
+  pointer-events: auto;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+}
+.d-ad {
+  position: absolute; left: 22px; top: -20px;
+  padding: 5px 18px; border-radius: 10px;
+  background: #2f8f83; color: #fff;
+  font-size: 20px; font-weight: bold;
+}
+.d-metin { font-size: 24px; line-height: 1.45; min-height: 2.9em; }
+.d-secenekler { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.d-secenek {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border: 3px solid #d8d2c4; border-radius: 12px;
+  background: #fff; color: #2b2f36;
+  font: 21px inherit; text-align: left;
+  cursor: pointer;
+}
+.d-secenek.secili { border-color: #2f8f83; background: #e6f3f0; }
+.d-no {
+  flex: none; width: 1.7em; height: 1.7em; line-height: 1.7em;
+  border-radius: 8px; background: #2b2f36; color: #fff;
+  font-size: 0.8em; font-weight: bold; text-align: center;
+}
+.d-ipucu { margin-top: 8px; font-size: 14px; text-align: right; opacity: 0.6; }
+#hud.konusuyor #envanter-alani, #hud.konusuyor #nisangah, #hud.konusuyor #mesaj { display: none; }
+body.konusuyor #dokunmatik { display: none; }
+#d-konus {
+  right: calc(max(22px, env(safe-area-inset-right)) + 90px); bottom: 212px;
+  background: rgba(47, 143, 131, 0.85);
+}
+@media (max-height: 520px) {
+  #d-konus { bottom: 176px; }
+  #diyalog { padding: 22px 18px 8px; bottom: 8px; }
+  .d-metin { font-size: 18px; min-height: 0; }
+  .d-secenek { font-size: 16px; padding: 6px 10px; }
+  .d-secenekler { gap: 5px; }
+}

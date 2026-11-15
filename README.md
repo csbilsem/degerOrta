@@ -1,4 +1,4 @@
-# Değerler Köyü
+# Kalbin Kahramanları
 
 6. sınıf Din Kültürü ve Ahlak Bilgisi dersi, **Ahlaki Davranışlar** ünitesi için tarayıcıda çalışan, Three.js ile yazılmış blok tabanlı eğitsel oyun. Doğru sözlülük, merhamet, adap ve vatan sevgisi değerlerini işler.
 
@@ -21,6 +21,7 @@ python3 sunucu.py
 | Fare | Etrafa bak |
 | Boşluk | Zıpla (tek blokluk basamaklar kendiliğinden çıkılır) |
 | Shift | Koş |
+| E | Yakındaki karakterle konuş; konuşmada ilerle |
 | Sol tık | Hedeflenen bloğu kır (çantaya eklenir) |
 | Sağ tık | Seçili bloğu yerleştir |
 | 1–9 / fare tekerleği | Çantadan blok seç |
@@ -32,13 +33,15 @@ python3 sunucu.py
 
 Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki kol yürütür, ekranı kaydırmak etrafa baktırır, **Kır / Koy / Zıpla** düğmeleri ve alttaki blok kutuları dokunarak kullanılır; **II** duraklatır.
 
-## Aşamalar
+## Aşamalar (tasarım belgesine göre)
 
-- [x] **1. aşama:** blok dünyası, hareket ve kamera
-- [x] **2. aşama:** blok kırma / yerleştirme, blok çantası
-- [ ] Karakterler ve konuşma (E)
-- [ ] Görevler, ahlaki ikilemler, değer puanı ve değer blokları
-- [ ] Anıt inşası ve köyün renklenmesi
+- [x] 1. Blok dünyası, hareket ve kamera
+- [x] 2. Köy haritası ve dört bölgenin yerleşimi (blok kırma / yerleştirme dahil)
+- [x] 3. Karakterler ve diyalog sistemi
+- [ ] 4. Görevler ve karar sistemi
+- [ ] 5. Değer puanı, değer blokları ve anıt inşası
+- [ ] 6. Renklenme efekti, ses ve son ekran
+- [ ] 7. Öğrencilerle deneme oynanışı ve düzeltmeler
 
 ## Dosya yapısı
 
@@ -48,5 +51,8 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - `js/worldgen.js` — köyün ve dört bölgenin kurulumu
 - `js/player.js` — hareket, çarpışma, kamera
 - `js/interact.js` — hedefleme, blok kırma/yerleştirme, blok çantası
+- `js/npc.js` — karakter modelleri, ad etiketleri, yakınlık algılama
+- `js/dialog.js` — konuşma kutusu ve seçenekler
+- `js/data/karakterler.js` — karakterler ve konuşma metinleri
 - `js/main.js` — ana döngü, girdiler, gösterge
 - `vendor/` — Three.js (MIT lisanslı)

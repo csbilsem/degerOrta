@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>Değerler Köyü</title>
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <title>Kalbin Kahramanları</title>
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <canvas id="oyun"></canvas>
@@ -12,12 +12,19 @@
   <div id="hud" class="gizli">
     <div id="nisangah"></div>
     <div id="ust-sol">
-      <div class="oyun-adi">Değerler Köyü</div>
+      <div class="oyun-adi">Kalbin Kahramanları</div>
       <div id="bolge-adi">Köy Meydanı</div>
     </div>
     <div id="bolge-bildirim"></div>
     <div id="surukle-ipucu" class="gizli">Etrafa bakmak için fareyi basılı tutup sürükle</div>
     <div id="mesaj"></div>
+    <div id="konus-ipucu" class="gizli"></div>
+    <div id="diyalog" class="gizli">
+      <div class="d-ad"></div>
+      <div class="d-metin"></div>
+      <div class="d-secenekler"></div>
+      <div class="d-ipucu"></div>
+    </div>
     <div id="envanter-alani">
       <div id="secili-ad"></div>
       <div id="envanter"></div>
@@ -27,6 +34,7 @@
       <span><kbd>Fare</kbd> Bak</span>
       <span><kbd>Boşluk</kbd> Zıpla</span>
       <span><kbd>Shift</kbd> Koş</span>
+      <span><kbd>E</kbd> Konuş</span>
       <span><kbd>Sol tık</kbd> Kır</span>
       <span><kbd>Sağ tık</kbd> Yerleştir</span>
       <span><kbd>1</kbd>–<kbd>9</kbd> Blok seç</span>
@@ -41,17 +49,20 @@
     <button id="d-koy" class="d-tus">Koy</button>
     <button id="d-kir" class="d-tus">Kır</button>
     <button id="d-zipla" class="d-tus">Zıpla</button>
+    <button id="d-konus" class="d-tus gizli">Konuş</button>
   </div>
   <pre id="bilgi" class="gizli"></pre>
 
   <div id="giris">
     <div class="kart">
-      <h1>Değerler Köyü</h1>
+      <h1>Kalbin Kahramanları</h1>
       <p class="alt-baslik">Doğru sözlülük · Merhamet · Adap · Vatan sevgisi</p>
-      <p>Gri köye hoş geldin! Köyü dolaş, dört bölgeyi keşfet. Güzel davranışlarınla köy yeniden renklenecek.</p>
+      <p>Değerlerini unutan köyün renkleri soldu. Köylülerle konuş, dört bölgedeki görevleri tamamla, kazandığın değer bloklarıyla meydana <b>Değerler Anıtı</b>'nı kur ve köyü yeniden renklendir!</p>
+      <p class="ilk-adim">İlk adım: meydandaki <b>Dede</b>'nin yanına git ve onunla konuş.</p>
       <ul class="tuslar dokunmatik-yardim gizli">
         <li><b>Sol kol:</b> yürü</li>
         <li><b>Ekranı kaydır:</b> etrafa bak</li>
+        <li><b>Konuş:</b> karakterle konuş</li>
         <li><b>Kır / Koy:</b> blok kır, yerleştir</li>
         <li><b>Zıpla:</b> zıpla</li>
         <li><b>Alttaki kutular:</b> blok seç</li>
@@ -62,6 +73,7 @@
         <li><kbd>Fare</kbd> etrafa bak</li>
         <li><kbd>Boşluk</kbd> zıpla</li>
         <li><kbd>Shift</kbd> koş</li>
+        <li><kbd>E</kbd> karakterle konuş</li>
         <li><kbd>Sol tık</kbd> blok kır</li>
         <li><kbd>Sağ tık</kbd> blok yerleştir</li>
         <li><kbd>1</kbd>–<kbd>9</kbd> / tekerlek: blok seç</li>
@@ -70,7 +82,7 @@
       </ul>
       <button id="basla">Oyuna Başla</button>
       <p id="hata" class="gizli"></p>
-      <p class="surum">sürüm 0.2.2</p>
+      <p class="surum">sürüm 0.3.0</p>
     </div>
   </div>
 
@@ -84,18 +96,18 @@
         kutu.textContent = 'Oyun yüklenemedi. ' + hatalar.join(' | ');
         kutu.classList.remove('gizli');
       }
-      window.degerlerKoyuHata = goster;
+      window.kalbinKahramanlariHata = goster;
       window.addEventListener('error', function (e) {
-        if (!window.degerlerKoyuHazir) goster(e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
+        if (!window.kalbinKahramanlariHazir) goster(e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
       });
       window.addEventListener('unhandledrejection', function (e) {
-        if (!window.degerlerKoyuHazir) goster(String(e.reason && e.reason.message || e.reason));
+        if (!window.kalbinKahramanlariHazir) goster(String(e.reason && e.reason.message || e.reason));
       });
       document.getElementById('basla').addEventListener('click', function () {
-        if (!window.degerlerKoyuHazir) goster(hatalar.length ? '' : 'Oyun dosyaları henüz yüklenmedi; birkaç saniye sonra tekrar dene.');
+        if (!window.kalbinKahramanlariHazir) goster(hatalar.length ? '' : 'Oyun dosyaları henüz yüklenmedi; birkaç saniye sonra tekrar dene.');
       });
     })();
   </script>
-  <script type="module" src="js/main.js?v=3" onerror="degerlerKoyuHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
+  <script type="module" src="js/main.js?v=4" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
 </body>
 </html>

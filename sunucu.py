@@ -15,5 +15,5 @@ class Isleyici(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-    print(f"Değerler Köyü: http://localhost:{port}")
+    print(f"Kalbin Kahramanları: http://localhost:{port}")
     ThreadingHTTPServer(("", port), Isleyici).serve_forever()
