@@ -30,6 +30,33 @@ function gurultu2(x, z) {
   return a + (b - a) * sz;
 }
 
+// ---------- Görevlerin kullandığı konumlar ----------
+const G0 = ZEMIN;
+export const DUVAR_BOSLUKLARI = [];
+for (const x of [45, 46]) for (const y of [G0 + 1, G0 + 2, G0 + 3]) DUVAR_BOSLUKLARI.push([x, y, 48]);
+export const KONAK_KAPISI = [];
+for (const x of [63, 64, 65]) for (const y of [G0 + 1, G0 + 2, G0 + 3]) KONAK_KAPISI.push([x, y, 93]);
+export const KEDI_KAPLARI = [
+  [30, G0 + 1, 65, B.SU_KABI],
+  [32, G0 + 1, 65, B.MAMA],
+];
+const TEPE = { x: 64, y: G0 + 12, z: 26 };
+// Oyuncunun dikeceği direk blokları ve küçük anıt
+export const DIREK_HEDEFLERI = [2, 3, 4, 5].map((dy) => [TEPE.x, TEPE.y + dy, TEPE.z, B.DIREK]);
+export const ANIT_HEDEFLERI = [1, 2, 3].map((dy) => [61, TEPE.y + dy, 24, B.ANIT_TASI]);
+// Direk tamamlanınca kendiliğinden yükselen üst kısım ve bayrak
+export function bayrakBloklari() {
+  const liste = [];
+  for (let dy = 6; dy <= 11; dy++) liste.push([TEPE.x, TEPE.y + dy, TEPE.z, B.DIREK]);
+  const desen = ['KKKKKKK', 'KBBKKKK', 'KBKKBKK', 'KBBKKKK', 'KKKKKKK'];
+  desen.forEach((satir, i) => {
+    [...satir].forEach((h, j) => {
+      liste.push([TEPE.x + 1 + j, TEPE.y + 11 - i, TEPE.z, h === 'B' ? B.BAYRAK_BEYAZ : B.BAYRAK_KIRMIZI]);
+    });
+  });
+  return liste;
+}
+
 export function koyuOlustur() {
   const W = 128;
   const H = 48;
@@ -89,7 +116,7 @@ export function koyuOlustur() {
     }
   }
   ayir(mx - 14, mz - 14, mx + 14, mz + 14);
-  // Anıt kaidesi: değer bloklarıyla anıt buraya inşa edilecek
+  // Anıt Alanı: değer bloklarıyla anıt buraya inşa edilecek
   doldur(mx - 2, G + 1, mz - 2, mx + 2, G + 1, mz + 2, B.MERMER);
   doldur(mx - 1, G + 2, mz - 1, mx + 1, G + 2, mz + 1, B.MERMER);
   for (const [dx, dz] of [[-8, -8], [8, -8], [-8, 8], [8, 8]]) {
@@ -267,13 +294,6 @@ export function koyuOlustur() {
         if (d <= 4.3) w.koy(x, ty, z, d > 3.3 ? B.ACIK_TAS : B.YOL);
       }
     doldur(tx - 1, ty + 1, tz - 1, tx + 1, ty + 1, tz + 1, B.MERMER);
-    doldur(tx, ty + 2, tz, tx, ty + 11, tz, B.DIREK);
-    const desen = ['KKKKKKK', 'KBBKKKK', 'KBKKBKK', 'KBBKKKK', 'KKKKKKK'];
-    desen.forEach((satir, i) => {
-      [...satir].forEach((h, j) => {
-        w.koy(tx + 1 + j, ty + 11 - i, tz, h === 'B' ? B.BAYRAK_BEYAZ : B.BAYRAK_KIRMIZI);
-      });
-    });
     // yamaçta birkaç ağaç
     for (const [x, z] of [[50, 30], [78, 30], [52, 16], [76, 14], [47, 22], [81, 22]]) agac(x, z, 4);
   }
@@ -288,6 +308,12 @@ export function koyuOlustur() {
     agac(x, z, 4 + Math.floor(rnd() * 2));
     ayir(x - 3, z - 3, x + 3, z + 3);
   }
+
+  // ---------- Görevlerle ilgili başlangıç durumu ----------
+  // Fırtına Ayşe Nine'nin evinin güney duvarında boşluk açmış
+  for (const [x, y, z] of DUVAR_BOSLUKLARI) w.koy(x, y, z, B.HAVA);
+  // Adap Konağı'nın kapısı kapalı; doğru selamla açılır
+  for (const [x, y, z] of KONAK_KAPISI) w.koy(x, y, z, B.KAPI);
 
   w.baslangic = { x: 64.5, y: G + 1, z: 73.5, yon: 0 };
   return w;

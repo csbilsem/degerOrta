@@ -74,6 +74,21 @@ function kediModeli(g) {
   return grup;
 }
 
+// Vatan Tepesi'ndeki bilgi bloğu: taş ayak üstünde dönen altın küp
+function bilgiModeli() {
+  const grup = new THREE.Group();
+  kutu(grup, 0.5, 0.7, 0.5, 0x8d9499, 0, 0.35, 0);
+  const kup = new THREE.Group();
+  kup.position.y = 1.2;
+  grup.add(kup);
+  kutu(kup, 0.5, 0.5, 0.5, 0xf0b429, 0, 0, 0);
+  kutu(kup, 0.1, 0.24, 0.52, 0xffffff, 0, -0.06, 0);
+  kutu(kup, 0.1, 0.1, 0.52, 0xffffff, 0, 0.16, 0);
+  grup.userData.bas = new THREE.Group();
+  grup.userData.kup = kup;
+  return grup;
+}
+
 function adEtiketi(ad) {
   const c = document.createElement('canvas');
   const g = c.getContext('2d');
@@ -98,19 +113,24 @@ function adEtiketi(ad) {
 }
 
 export class Karakterler {
+  bul(kimlik) {
+    return this.liste.find((k) => k.kimlik === kimlik);
+  }
+
   constructor(dunya, tanimlar) {
     this.grup = new THREE.Group();
     this.liste = tanimlar.map((t) => {
       const kedi = t.gorunum.tur === 'kedi';
-      const model = kedi ? kediModeli(t.gorunum) : insanModeli(t.gorunum);
-      const y = t.y ?? ZEMIN + 1;
+      const bilgi = t.gorunum.tur === 'bilgi';
+      const model = kedi ? kediModeli(t.gorunum) : bilgi ? bilgiModeli() : insanModeli(t.gorunum);
+      const y = t.zeminden ? dunya.tepe(Math.floor(t.x), Math.floor(t.z)) + 1 : t.y ?? ZEMIN + 1;
       model.position.set(t.x, y, t.z);
       model.rotation.y = t.bakis ?? 0;
-      const boy = kedi ? 0.75 : 1.85 * model.scale.y;
+      const boy = kedi ? 0.75 : bilgi ? 1.5 : 1.85 * model.scale.y;
       const etiket = adEtiketi(t.ad);
       etiket.position.set(t.x, y + boy + 0.38, t.z);
       this.grup.add(model, etiket);
-      return { ...t, y, boy, kedi, model, etiket, durusYonu: t.bakis ?? 0, evre: Math.random() * 6 };
+      return { ...t, y, boy, kedi, bilgi, model, etiket, durusYonu: t.bakis ?? 0, evre: Math.random() * 6 };
     });
   }
 
@@ -141,6 +161,11 @@ export class Karakterler {
       const dx = oyuncu.konum.x - k.x;
       const dz = oyuncu.konum.z - k.z;
       const uzak = Math.hypot(dx, dz);
+      if (k.bilgi) {
+        k.model.userData.kup.rotation.y += dt * 1.2;
+        k.model.userData.kup.position.y = 1.2 + Math.sin(k.evre * 2) * 0.08;
+        continue;
+      }
       // Oyuncu yaklaşınca ona döner, uzaklaşınca eski duruşuna geri döner
       const hedef = uzak < 5 || k === konusulan ? Math.atan2(dx, dz) : k.durusYonu;
       let fark = hedef - k.model.rotation.y;

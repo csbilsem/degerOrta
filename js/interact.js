@@ -80,6 +80,30 @@ export class Envanter {
     return true;
   }
 
+  // Görev eşyası için: yer yoksa, görev bloğu olmayan en az sayılı yuvanın yerine koyar.
+  zorlaEkle(id, adet = 1) {
+    if (this.ekle(id, adet)) return;
+    const adaylar = this.yuvalar.filter((v) => !v.sabit && !BLOKLAR[v.id].gorevBlogu);
+    const y = adaylar.sort((a, b) => a.adet - b.adet)[0] || this.yuvalar[8];
+    y.id = id;
+    y.adet = adet;
+    this.ciz();
+  }
+
+  // Bir blok türünü çantadan tamamen çıkarır
+  cikar(id) {
+    for (const v of this.yuvalar) {
+      if (v.id !== id || v.sabit) continue;
+      v.id = 0;
+      v.adet = 0;
+    }
+    this.ciz();
+  }
+
+  adet(id) {
+    return this.yuvalar.filter((v) => v.id === id).reduce((t, v) => t + v.adet, 0);
+  }
+
   // Seçili yuvadan bir blok harcar; blok kimliğini döndürür (yoksa 0).
   harca() {
     const y = this.seciliYuva;
@@ -144,23 +168,29 @@ export class Etkilesim {
     const id = this.dunya.al(h.x, h.y, h.z);
     const tur = BLOKLAR[id];
     if (tur.kirilmaz) return this.mesaj(tur.kirilmaz), false;
+    const koruma = this.dunya.korumalar.get(h.x + ',' + h.y + ',' + h.z);
+    if (koruma) return this.mesaj(koruma), false;
     if (h.y <= 1) return this.mesaj('Daha derine kazılamaz.'), false;
     if (!this.envanter.ekle(id)) {
       return this.mesaj('Çantan dolu! Önce elindeki bloklardan birkaçını yerleştir.'), false;
     }
     this.dunya.koy(h.x, h.y, h.z, B.HAVA);
     this.dunya.blokDegisti(h.x, h.z);
+    if (this.degisince) this.degisince();
     return true;
   }
 
   yerlestir() {
     const h = this.hedef;
     if (!h) return false;
-    const x = h.x + h.nx;
-    const y = h.y + h.ny;
-    const z = h.z + h.nz;
-    if (!this.dunya.sinirda(x, y, z) || y >= this.dunya.H - 2) return this.mesaj('Buraya blok konulamaz.'), false;
+    let x = h.x + h.nx;
+    let y = h.y + h.ny;
+    let z = h.z + h.nz;
     const s = this.envanter.seciliYuva;
+    // Görev blokları yakındaki işaretli yere kendiliğinden oturur
+    const duzeltme = s.adet > 0 && this.yerDuzelt && this.yerDuzelt(x, y, z, s.id);
+    if (duzeltme) [x, y, z] = duzeltme;
+    if (!this.dunya.sinirda(x, y, z) || y >= this.dunya.H - 2) return this.mesaj('Buraya blok konulamaz.'), false;
     if (s.adet <= 0) {
       this.mesaj(
         s.sabit
@@ -171,9 +201,12 @@ export class Etkilesim {
     }
     if (katiMi(this.dunya.al(x, y, z))) return false;
     if (this.oyuncu.hucreyleKesisir(x, y, z)) return false;
+    const red = this.yerlestirmeKontrol && this.yerlestirmeKontrol(x, y, z, s.id);
+    if (red) return this.mesaj(red), false;
     const id = this.envanter.harca();
     this.dunya.koy(x, y, z, id);
     this.dunya.blokDegisti(x, z);
+    if (this.degisince) this.degisince();
     return true;
   }
 }

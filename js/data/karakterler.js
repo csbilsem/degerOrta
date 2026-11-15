@@ -30,6 +30,7 @@ export const KARAKTERLER = [
             { metin: 'Ne yapmam gerekiyor?', git: 'gorev' },
             { metin: 'Bölgeleri anlatır mısın?', git: 'bolgeler' },
             { metin: 'Anıt nedir?', git: 'anit' },
+            { metin: 'Nereye gideceğimi nasıl bulurum?', git: 'yol' },
             { metin: 'Hazırım, gidiyorum!', git: 'veda' },
           ],
         },
@@ -53,9 +54,17 @@ export const KARAKTERLER = [
         },
         anit: {
           metin: [
-            'Arkamdaki beyaz mermer kaideyi görüyor musun? Orası Değerler Anıtı\'nın yeri.',
-            'Kazandığın değer bloklarını o kaidenin üzerine yerleştireceksin. Anıt tamamlandığında köyün bütün renkleri geri gelecek.',
+            'Meydanın ortasındaki beyaz mermer alanı görüyor musun? Orası Anıt Alanı; Değerler Anıtı orada yükselecek.',
+            'Kazandığın değer bloklarını Anıt Alanı\'nın üzerine yerleştireceksin. Anıt tamamlandığında köyün bütün renkleri geri gelecek.',
             'O gün sana "Kalbin Kahramanı" diyeceğiz!',
+          ],
+          git: 'menu',
+        },
+        yol: {
+          metin: [
+            'Ekranın sağ üstündeki haritaya bak. Görev seni bekleyen yerler haritada renkli noktalarla gösterilir.',
+            'Köyde de o yerlerden gökyüzüne renkli bir ışık yükselir. Işığa doğru yürü, oradaki kişiyle konuş.',
+            'Sol üstteki görev listesi, hangi bölgede hangi görevin sırada olduğunu söyler. İstediğin bölgeden başlayabilirsin.',
           ],
           git: 'menu',
         },
@@ -116,7 +125,7 @@ export const KARAKTERLER = [
     kimlik: 'ayse', ad: 'Ayşe Nine', x: 50.5, z: 46.5, bakis: Math.PI / 2,
     gorunum: { tur: 'kadin', yasli: true, ust: 0x5d6f8a, alt: 0x3e4a5c, ortu: 0xf4f4f4 },
     diyalog: basit(
-      'Ah yavrum, hoş geldin. Dün geceki fırtına evimin duvarını yıktı.',
+      'Ah yavrum, hoş geldin. Dün geceki fırtına evimin güney duvarını yıktı.',
       'Bu yaşta tek başıma nasıl onaracağım, bilemiyorum...'
     ),
   },
@@ -168,8 +177,60 @@ export const KARAKTERLER = [
     gorunum: { tur: 'yetiskin', ust: 0xc0392b, alt: 0x2c3e50, sac: 0x3b2a1a },
     diyalog: basit(
       'Tepeye hoş geldin! Buradan bütün köy görünür.',
-      'Bu bayrak, vatanımız için canını veren kahramanların emanetidir.',
-      'Çanakkale\'yi, Kurtuluş Savaşı\'nı ve 15 Temmuz\'u yakında birlikte öğreneceğiz.'
+      'Yamaçtaki altın renkli bilgi bloklarını gördün mü? Önce onları oku, sonra yanıma gel.'
     ),
+  },
+  {
+    kimlik: 'bilgi-canakkale', ad: 'Bilgi: Çanakkale Zaferi', x: 67.5, z: 45.5, zeminden: true,
+    ipucu: 'Bilgi bloğunu oku', gorunum: { tur: 'bilgi' },
+    diyalog: {
+      baslangic: 'a',
+      dugumler: {
+        a: {
+          konusan: 'Çanakkale Zaferi (1915)',
+          metin: [
+            'Birinci Dünya Savaşı\'nda düşman donanması Çanakkale Boğazı\'nı geçip İstanbul\'a ulaşmak istedi.',
+            '18 Mart 1915\'te düşman gemileri boğazda durduruldu. Karada da askerlerimiz aylarca kahramanca savaştı; Mustafa Kemal bu cephede büyük başarı gösterdi.',
+            'On binlerce askerimiz şehit oldu ama düşman geçemedi. Bu yüzden "Çanakkale geçilmez!" deriz. Her yıl 18 Mart\'ta şehitlerimizi anarız.',
+          ],
+        },
+      },
+    },
+  },
+  {
+    kimlik: 'bilgi-kurtulus', ad: 'Bilgi: Kurtuluş Savaşı', x: 60.5, z: 38.5, zeminden: true,
+    ipucu: 'Bilgi bloğunu oku', gorunum: { tur: 'bilgi' },
+    diyalog: {
+      baslangic: 'a',
+      dugumler: {
+        a: {
+          konusan: 'Kurtuluş Savaşı (1919-1922)',
+          metin: [
+            'Birinci Dünya Savaşı\'ndan sonra vatanımızın birçok yeri işgal edildi.',
+            'Mustafa Kemal Paşa 19 Mayıs 1919\'da Samsun\'a çıkarak Millî Mücadele\'yi başlattı. 23 Nisan 1920\'de Ankara\'da Türkiye Büyük Millet Meclisi açıldı.',
+            'Kadın, erkek, genç, yaşlı bütün millet el ele verdi. 30 Ağustos 1922\'de Büyük Taarruz zaferle sonuçlandı ve vatanımız işgalden kurtuldu.',
+            '29 Ekim 1923\'te Cumhuriyet ilan edildi.',
+          ],
+        },
+      },
+    },
+  },
+  {
+    kimlik: 'bilgi-15temmuz', ad: 'Bilgi: 15 Temmuz', x: 67.5, z: 32.5, zeminden: true,
+    ipucu: 'Bilgi bloğunu oku', gorunum: { tur: 'bilgi' },
+    diyalog: {
+      baslangic: 'a',
+      dugumler: {
+        a: {
+          konusan: '15 Temmuz (2016)',
+          metin: [
+            '15 Temmuz 2016 gecesi, silah zoruyla ülkenin yönetimini ele geçirmek isteyen bir grup darbe girişiminde bulundu.',
+            'Milletimiz o gece sokaklara ve meydanlara çıktı; tankların önünde durarak vatanına, bayrağına ve demokrasisine sahip çıktı.',
+            'O gece 251 vatandaşımız şehit oldu, binlercesi gazi oldu. Darbe girişimi milletin birliği sayesinde başarısız oldu.',
+            'Her yıl 15 Temmuz\'u Demokrasi ve Millî Birlik Günü olarak anarız.',
+          ],
+        },
+      },
+    },
   },
 ];

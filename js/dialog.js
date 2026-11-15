@@ -1,4 +1,5 @@
 // Ekranın altında, büyük yazıyla gösterilen konuşma kutusu.
+// Düğüm alanları: metin, secenekler [{metin, git, etki}], git, konusan, giris().
 // Sayfa sayfa ilerler; seçenekler sayı tuşları, W/S + E ya da dokunarak seçilir.
 
 export class Diyalog {
@@ -52,6 +53,7 @@ export class Diyalog {
     this.sayfa = 0;
     this.secili = 0;
     this._ciz();
+    if (d.giris) d.giris();
   }
 
   get seceneklerGorunur() {
@@ -87,7 +89,8 @@ export class Diyalog {
   }
 
   _ciz() {
-    this.adEl.textContent = this.karakter.ad;
+    this.adEl.textContent = this.dugum.konusan || this.karakter.ad;
+    this.kok.classList.toggle('anlatici', this.dugum.konusan === 'Anlatıcı');
     this.metinEl.textContent = this.sayfalar[this.sayfa];
     this.secenekEl.innerHTML = '';
     const secenekli = this.seceneklerGorunur;

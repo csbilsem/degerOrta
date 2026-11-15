@@ -45,6 +45,7 @@ export class World {
     this.doygunluk = { value: new Float32Array([0.12, 0.12, 0.12, 0.12, 0.12, 1]) };
     this.malzeme = this._malzemeOlustur();
     this._renkler = BLOKLAR.map((b) => new THREE.Color(b.renk));
+    this.korumalar = new Map(); // "x,y,z" -> kırılamama açıklaması
   }
 
   sinirda(x, y, z) {
@@ -119,6 +120,26 @@ export class World {
       for (let px = 0; px < this.W / PARCA; px++) this.parcaOr(px, pz);
   }
 
+  // Birçok bloğu birden değiştirir ve etkilenen parçaları bir kez örer.
+  // liste: [x, y, z, id] dizileri
+  topluDegistir(liste) {
+    const parcalar = new Set();
+    for (const [x, y, z, id] of liste) {
+      this.koy(x, y, z, id);
+      for (let dz = -1; dz <= 1; dz++)
+        for (let dx = -1; dx <= 1; dx++)
+          parcalar.add(Math.floor((x + dx) / PARCA) + ',' + Math.floor((z + dz) / PARCA));
+    }
+    for (const a of parcalar) {
+      const [px, pz] = a.split(',').map(Number);
+      this.parcaOr(px, pz);
+    }
+  }
+
+  koru(x, y, z, aciklama) {
+    this.korumalar.set(x + ',' + y + ',' + z, aciklama);
+  }
+
   // Bir blok değişince onu içeren ve ona komşu parçaları yeniden örer
   blokDegisti(x, z) {
     const yapilan = new Set();
@@ -158,7 +179,7 @@ export class World {
           if (id === B.HAVA) continue;
           const r = this._renkler[id];
           const oynama = 0.94 + karma(x, y, z) * 0.12;
-          const blg = BLOKLAR[id].deger ? 5 : this.bolge(x, z);
+          const blg = BLOKLAR[id].deger || BLOKLAR[id].renkli ? 5 : this.bolge(x, z);
           for (const f of YUZLER) {
             n[0] = n[1] = n[2] = 0;
             n[f.a] = f.s;

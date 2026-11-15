@@ -38,7 +38,7 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - [x] 1. Blok dünyası, hareket ve kamera
 - [x] 2. Köy haritası ve dört bölgenin yerleşimi (blok kırma / yerleştirme dahil)
 - [x] 3. Karakterler ve diyalog sistemi
-- [ ] 4. Görevler ve karar sistemi
+- [x] 4. Görevler ve karar sistemi (12 görev, görev paneli, mini harita, ışıklı yön işaretleri, tarayıcıya kayıt)
 - [ ] 5. Değer puanı, değer blokları ve anıt inşası
 - [ ] 6. Renklenme efekti, ses ve son ekran
 - [ ] 7. Öğrencilerle deneme oynanışı ve düzeltmeler
@@ -54,5 +54,8 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - `js/npc.js` — karakter modelleri, ad etiketleri, yakınlık algılama
 - `js/dialog.js` — konuşma kutusu ve seçenekler
 - `js/data/karakterler.js` — karakterler ve konuşma metinleri
+- `js/quests.js` — görev durumu, kararlar, puan, yön işaretleri, kayıt
+- `js/minimap.js` — mini harita
+- `js/data/gorevler.js` — on iki görevin metinleri ve seçenekleri
 - `js/main.js` — ana döngü, girdiler, gösterge
 - `vendor/` — Three.js (MIT lisanslı)

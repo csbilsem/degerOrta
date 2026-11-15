@@ -33,6 +33,10 @@ export const B = {
   DEGER_MERHAMET: 28,
   DEGER_ADAP: 29,
   DEGER_VATAN: 30,
+  KAPI: 31,
+  SU_KABI: 32,
+  MAMA: 33,
+  ANIT_TASI: 34,
 };
 
 // kati: oyuncu içinden geçemez. opak: arkasındaki yüzleri gizler.
@@ -77,8 +81,20 @@ export const DEGER_BLOKLARI = [B.DEGER_DOGRULUK, B.DEGER_MERHAMET, B.DEGER_ADAP,
 for (const id of DEGER_BLOKLARI) BLOKLAR[id].deger = true;
 
 // Kırılamayan bloklar ve oyuncuya gösterilecek açıklama
-BLOKLAR[B.MERMER].kirilmaz = 'Anıt kaidesi kırılamaz; anıtını bunun üzerine inşa et.';
-for (const id of [B.DIREK, B.BAYRAK_KIRMIZI, B.BAYRAK_BEYAZ])
+BLOKLAR[B.MERMER].kirilmaz = 'Burası Anıt Alanı; mermeri kırılamaz. Anıtını bunun üzerine kur.';
+
+// Görev blokları: yalnızca görevde işaretlenen yerlere konur, hep renklidir.
+BLOKLAR[B.KAPI] = T('Konak kapısı', 0x6b4423);
+BLOKLAR[B.SU_KABI] = T('Su kabı', 0x4fb6e8);
+BLOKLAR[B.MAMA] = T('Mama kabı', 0xd98b4a);
+BLOKLAR[B.ANIT_TASI] = T('Anıt taşı', 0xe9e4d8);
+BLOKLAR[B.KAPI].kirilmaz = 'Bu kapı güzel sözle açılır. Hatice Hanım ile konuş.';
+for (const id of [B.SU_KABI, B.MAMA, B.ANIT_TASI, B.DIREK]) {
+  BLOKLAR[id].gorevBlogu = true;
+  BLOKLAR[id].kirilmaz = 'Bu blok görev için yerinde kalmalı.';
+}
+for (const id of [B.SU_KABI, B.MAMA]) BLOKLAR[id].renkli = true;
+for (const id of [B.BAYRAK_KIRMIZI, B.BAYRAK_BEYAZ])
   BLOKLAR[id].kirilmaz = 'Bayrağımız değerlidir; ona zarar verilmez.';
 
 export const katiMi = (id) => BLOKLAR[id].kati;

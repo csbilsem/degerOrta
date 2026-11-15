@@ -7,6 +7,8 @@ import { Envanter, Etkilesim } from './interact.js';
 import { Karakterler } from './npc.js';
 import { Diyalog } from './dialog.js';
 import { KARAKTERLER } from './data/karakterler.js';
+import { Gorevler } from './quests.js';
+import { Harita } from './minimap.js';
 
 const $ = (id) => document.getElementById(id);
 const tuval = $('oyun');
@@ -34,12 +36,12 @@ sahne.add(oyuncu.avatar);
 
 // ---------- Envanter ve blok etkileşimi ----------
 let mesajZamanlayici = 0;
-function mesajGoster(metin) {
+function mesajGoster(metin, sure = 3200) {
   const kutu = $('mesaj');
   kutu.textContent = metin;
   kutu.classList.add('gorunur');
   clearTimeout(mesajZamanlayici);
-  mesajZamanlayici = setTimeout(() => kutu.classList.remove('gorunur'), 3200);
+  mesajZamanlayici = setTimeout(() => kutu.classList.remove('gorunur'), sure);
 }
 const envanter = new Envanter($('envanter'), $('secili-ad'));
 envanter.ekle(B.TAHTA, 12); // başlangıç malzemesi
@@ -66,7 +68,7 @@ function konus() {
   oyuncu.analog.x = oyuncu.analog.y = 0;
   $('hud').classList.add('konusuyor');
   document.body.classList.add('konusuyor');
-  diyalog.baslat(konusulan);
+  diyalog.baslat(konusulan, gorevler.diyalogBul(konusulan));
 }
 
 // ---------- Bloklu bulutlar ----------
@@ -92,9 +94,44 @@ sahne.add(bulutlar);
 // ---------- Bölge renklenmesi ----------
 // hedefDoygunluk: her bölgenin ulaşmak istediği renk miktarı (0.12 = gri, 1 = tam renk)
 const hedefDoygunluk = [0.12, 0.12, 0.12, 0.12, 0.12];
-function bolgeyiRenklendir(no, acik = true) {
+function bolgeyiRenklendir(no, acik = true, aninda = false) {
   hedefDoygunluk[no] = acik ? 1 : 0.12;
+  if (aninda) dunya.doygunluk.value[no] = hedefDoygunluk[no];
+  if (harita) harita.tabanCiz(hedefDoygunluk);
 }
+
+// ---------- Bildirim şeridi (bölge adı, görev tamamlandı) ----------
+let bildirimZamanlayici = 0;
+function bildir(metin, sure = 2600) {
+  const kutu = $('bolge-bildirim');
+  kutu.textContent = metin;
+  kutu.classList.add('gorunur');
+  clearTimeout(bildirimZamanlayici);
+  bildirimZamanlayici = setTimeout(() => kutu.classList.remove('gorunur'), sure);
+}
+
+// ---------- Görevler ve harita ----------
+let harita = null;
+const gorevler = new Gorevler({
+  dunya,
+  karakterler,
+  envanter,
+  etkilesim,
+  sahne,
+  mesaj: mesajGoster,
+  bildir,
+  renklendir: (no, aninda) => bolgeyiRenklendir(no, true, aninda),
+  panel: $('gorev-paneli'),
+});
+harita = new Harita($('harita'), dunya);
+harita.tabanCiz(hedefDoygunluk);
+$('sifirla').classList.toggle('gizli', !gorevler.kayitVarMi());
+if (gorevler.kayitVarMi()) $('basla').textContent = 'Kaldığın Yerden Devam Et';
+$('sifirla').addEventListener('click', () => {
+  if (!window.confirm('Bütün ilerlemen silinecek ve oyun baştan başlayacak. Emin misin?')) return;
+  gorevler.sifirla();
+  window.location.reload();
+});
 
 // ---------- Oyun durumu ve girdiler ----------
 let oynuyor = false;
@@ -146,7 +183,8 @@ function arayuzuGuncelle() {
   $('surukle-ipucu').classList.toggle('gizli', !surukleModu);
   if (!oynuyor) {
     oyuncu.tuslar.clear();
-    $('basla').textContent = oynandi ? 'Devam Et' : 'Oyuna Başla';
+    $('basla').textContent = oynandi ? 'Devam Et' : gorevler.kayitVarMi() ? 'Kaldığın Yerden Devam Et' : 'Oyuna Başla';
+    $('sifirla').classList.toggle('gizli', !gorevler.kayitVarMi());
   }
 }
 let oynandi = false;
@@ -342,14 +380,9 @@ boyutlandir();
 
 // ---------- Bölge adı bildirimi ----------
 let sonBolge = -1;
-let bildirimZamanlayici = 0;
 function bolgeBildir(no) {
   $('bolge-adi').textContent = BOLGE_ADLARI[no];
-  const kutu = $('bolge-bildirim');
-  kutu.textContent = BOLGE_ADLARI[no];
-  kutu.classList.add('gorunur');
-  clearTimeout(bildirimZamanlayici);
-  bildirimZamanlayici = setTimeout(() => kutu.classList.remove('gorunur'), 2600);
+  if (!gorevler.bildirimSuruyor) bildir(BOLGE_ADLARI[no]);
 }
 
 // ---------- Ana döngü ----------
@@ -366,6 +399,8 @@ function kare(simdi) {
   oyuncu.guncelle(dt, serbest);
   etkilesim.guncelle(serbest);
   karakterler.guncelle(dt, oyuncu, konusulan);
+  gorevler.guncelle(simdi / 1000);
+  if (oynuyor) harita.ciz(oyuncu, gorevler.isaretler, simdi / 1000);
   const yeniYakin = serbest ? karakterler.yakindaki(oyuncu) : null;
   if (yeniYakin !== yakinKarakter) {
     yakinKarakter = yeniYakin;
@@ -373,7 +408,7 @@ function kare(simdi) {
     ipucu.classList.toggle('gizli', !yakinKarakter);
     $('d-konus').classList.toggle('gizli', !yakinKarakter);
     if (yakinKarakter) {
-      const ek = yakinKarakter.kedi ? `${yakinKarakter.ad}'a bak` : `${yakinKarakter.ad} ile konuş`;
+      const ek = yakinKarakter.ipucu || (yakinKarakter.kedi ? `${yakinKarakter.ad}'a bak` : `${yakinKarakter.ad} ile konuş`);
       ipucu.textContent = dokunmatik ? ek : `E — ${ek}`;
     }
   }
@@ -421,4 +456,4 @@ function kare(simdi) {
 requestAnimationFrame(kare);
 
 // Sonraki aşamalar ve denemeler için dışa açılan nesne
-window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus };
+window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus, gorevler, harita };
