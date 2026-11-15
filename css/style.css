@@ -213,3 +213,11 @@ body.dokunmatik .yuva .kup { left: 8px; top: 8px; }
   #d-kir { bottom: 90px; }
   #d-koy { bottom: 156px; }
 }
+
+#hata {
+  margin: 14px 0 0; padding: 8px 12px; border-radius: 8px;
+  background: #fde3e0; color: #9b2318;
+  font-size: 13px; text-align: left; word-break: break-word;
+  user-select: text; -webkit-user-select: text;
+}
+.surum { margin: 12px 0 0; font-size: 12px; opacity: 0.55; }

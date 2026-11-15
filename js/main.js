@@ -77,20 +77,30 @@ let surukleModu = false; // fare kilidi kullanılamıyorsa: basılı tutup sür�
 let hataAyiklama = false;
 
 // Dokunmatik cihazlarda (iPad, telefon) fare kilidi yoktur; ekran kumandaları kullanılır.
-const dokunmatik =
-  !tuval.requestPointerLock || window.matchMedia('(pointer: coarse)').matches;
-document.body.classList.toggle('dokunmatik', dokunmatik);
-document.querySelector('.dokunmatik-yardim').classList.toggle('gizli', !dokunmatik);
-document.querySelector('.klavye-yardim').classList.toggle('gizli', dokunmatik);
+// Kumandalar, birincil işaretçi parmaksa baştan, değilse ilk dokunuşta açılır.
+let dokunmatik = false;
+function dokunmatikAc() {
+  if (dokunmatik) return;
+  dokunmatik = true;
+  document.body.classList.add('dokunmatik');
+  document.querySelector('.dokunmatik-yardim').classList.remove('gizli');
+  document.querySelector('.klavye-yardim').classList.add('gizli');
+  if (oynuyor) arayuzuGuncelle();
+}
+window.addEventListener('touchstart', dokunmatikAc, { capture: true, passive: true });
 
 function baslat() {
-  if (dokunmatik) return surukleModunaGec();
+  if (dokunmatik || !tuval.requestPointerLock) return surukleModunaGec();
   try {
     const istek = tuval.requestPointerLock();
     if (istek && istek.catch) istek.catch(surukleModunaGec);
   } catch {
     surukleModunaGec();
   }
+  // Bazı tarayıcılar fare kilidini sessizce yok sayar; o zaman da oyun başlasın.
+  setTimeout(() => {
+    if (!oynuyor) surukleModunaGec();
+  }, 700);
 }
 function duraklat() {
   oynuyor = false;
@@ -115,8 +125,10 @@ function arayuzuGuncelle() {
   }
 }
 let oynandi = false;
+if (!tuval.requestPointerLock || window.matchMedia('(pointer: coarse)').matches) dokunmatikAc();
 
 $('basla').addEventListener('click', baslat);
+window.degerlerKoyuHazir = true;
 document.addEventListener('pointerlockchange', () => {
   const kilitli = document.pointerLockElement === tuval;
   if (kilitli) {

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Değerler Köyü</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
   <canvas id="oyun"></canvas>
@@ -69,9 +69,33 @@
         <li><kbd>Esc</kbd> duraklat</li>
       </ul>
       <button id="basla">Oyuna Başla</button>
+      <p id="hata" class="gizli"></p>
+      <p class="surum">sürüm 0.2.2</p>
     </div>
   </div>
 
-  <script type="module" src="js/main.js"></script>
+  <script>
+    // Oyun yüklenemezse sessizce takılmak yerine nedenini göster
+    (function () {
+      var hatalar = [];
+      function goster(metin) {
+        if (metin) hatalar.push(metin);
+        var kutu = document.getElementById('hata');
+        kutu.textContent = 'Oyun yüklenemedi. ' + hatalar.join(' | ');
+        kutu.classList.remove('gizli');
+      }
+      window.degerlerKoyuHata = goster;
+      window.addEventListener('error', function (e) {
+        if (!window.degerlerKoyuHazir) goster(e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        if (!window.degerlerKoyuHazir) goster(String(e.reason && e.reason.message || e.reason));
+      });
+      document.getElementById('basla').addEventListener('click', function () {
+        if (!window.degerlerKoyuHazir) goster(hatalar.length ? '' : 'Oyun dosyaları henüz yüklenmedi; birkaç saniye sonra tekrar dene.');
+      });
+    })();
+  </script>
+  <script type="module" src="js/main.js?v=3" onerror="degerlerKoyuHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
 </body>
 </html>

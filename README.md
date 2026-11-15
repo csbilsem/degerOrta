@@ -7,7 +7,7 @@
 Derleme adımı yoktur. Klasörü herhangi bir statik sunucuyla açmak yeterlidir:
 
 ```bash
-python3 -m http.server 8000
+python3 sunucu.py
 # sonra tarayıcıda: http://localhost:8000
 ```
 
