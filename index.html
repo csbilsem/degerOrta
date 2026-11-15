@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Değerler Köyü</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="oyun"></canvas>
+
+  <div id="hud" class="gizli">
+    <div id="nisangah"></div>
+    <div id="ust-sol">
+      <div class="oyun-adi">Değerler Köyü</div>
+      <div id="bolge-adi">Köy Meydanı</div>
+    </div>
+    <div id="bolge-bildirim"></div>
+    <div id="surukle-ipucu" class="gizli">Etrafa bakmak için fareyi basılı tutup sürükle</div>
+    <div id="yardim">
+      <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Yürü</span>
+      <span><kbd>Fare</kbd> Bak</span>
+      <span><kbd>Boşluk</kbd> Zıpla</span>
+      <span><kbd>Shift</kbd> Koş</span>
+      <span><kbd>V</kbd> Kamera</span>
+      <span><kbd>Esc</kbd> Duraklat</span>
+    </div>
+  </div>
+  <pre id="bilgi" class="gizli"></pre>
+
+  <div id="giris">
+    <div class="kart">
+      <h1>Değerler Köyü</h1>
+      <p class="alt-baslik">Doğru sözlülük · Merhamet · Adap · Vatan sevgisi</p>
+      <p>Gri köye hoş geldin! Köyü dolaş, dört bölgeyi keşfet. Güzel davranışlarınla köy yeniden renklenecek.</p>
+      <ul class="tuslar">
+        <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> yürü</li>
+        <li><kbd>Fare</kbd> etrafa bak</li>
+        <li><kbd>Boşluk</kbd> zıpla</li>
+        <li><kbd>Shift</kbd> koş</li>
+        <li><kbd>V</kbd> kamerayı değiştir</li>
+        <li><kbd>Esc</kbd> duraklat</li>
+      </ul>
+      <button id="basla">Oyuna Başla</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
