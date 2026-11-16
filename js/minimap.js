@@ -44,31 +44,71 @@ export class Harita {
     g.putImageData(resim, 0, 0);
   }
 
+  // Görünüm: 0 = bütün köy, 1 = yakın (oyuncuyu izler), 2 = büyük harita
+  gorunumDegistir() {
+    this.gorunum = ((this.gorunum || 0) + 1) % 3;
+    const buyuk = this.gorunum === 2;
+    this.tuval.classList.toggle('buyuk', buyuk);
+    this.tuval.width = this.tuval.height = buyuk ? 760 : 340;
+    return this.gorunum;
+  }
+
   ciz(oyuncu, isaretler, zaman) {
     const g = this.g;
     const boyut = this.tuval.width;
-    const olcek = boyut / this.dunya.W;
+    const gorunum = this.gorunum || 0;
+    const yakin = gorunum === 1;
+    const buyuk = gorunum === 2;
+    const olcek = (boyut / this.dunya.W) * (yakin ? 3 : 1);
+    // haritanın sol üst köşesine denk gelen dünya koordinatı
+    let ox = 0;
+    let oz = 0;
+    if (yakin) {
+      const yari = boyut / olcek / 2;
+      ox = Math.max(0, Math.min(this.dunya.W - 2 * yari, oyuncu.konum.x - yari));
+      oz = Math.max(0, Math.min(this.dunya.D - 2 * yari, oyuncu.konum.z - yari));
+    }
+    const k = buyuk ? 1.6 : 1; // işaret büyüklüğü
     g.imageSmoothingEnabled = false;
-    g.drawImage(this.taban, 0, 0, boyut, boyut);
+    g.drawImage(this.taban, -ox * olcek, -oz * olcek, this.dunya.W * olcek, this.dunya.D * olcek);
 
-    // görev noktaları
+    if (buyuk) {
+      g.font = 'bold 22px "Trebuchet MS", sans-serif';
+      g.textAlign = 'center';
+      g.lineWidth = 5;
+      g.strokeStyle = 'rgba(30,36,46,0.85)';
+      g.fillStyle = '#fff';
+      for (const [ad, x, z] of [
+        ['Köy Meydanı', 64, 80], ['Doğruluk Çarşısı', 98, 48], ['Merhamet Bahçesi', 30, 48],
+        ['Adap Konağı', 64, 113], ['Vatan Tepesi', 64, 8],
+      ]) {
+        g.strokeText(ad, x * olcek, z * olcek);
+        g.fillText(ad, x * olcek, z * olcek);
+      }
+    }
+
+    // görev noktaları (yakın görünümde harita dışında kalanlar kenarda gösterilir)
     const nabiz = 1 + 0.25 * Math.sin(zaman * 5);
     for (const n of isaretler) {
-      const x = n.x * olcek;
-      const y = n.z * olcek;
+      let x = (n.x - ox) * olcek;
+      let y = (n.z - oz) * olcek;
+      const disarida = x < 8 || y < 8 || x > boyut - 8 || y > boyut - 8;
+      x = Math.max(9, Math.min(boyut - 9, x));
+      y = Math.max(9, Math.min(boyut - 9, y));
       g.beginPath();
-      g.arc(x, y, 7 * nabiz, 0, Math.PI * 2);
+      g.arc(x, y, (disarida ? 5 : 7 * nabiz) * k, 0, Math.PI * 2);
       g.fillStyle = '#' + BOLGE_RENKLERI[n.bolge].toString(16).padStart(6, '0');
       g.fill();
-      g.lineWidth = 2.5;
+      g.lineWidth = 2.5 * k;
       g.strokeStyle = '#fff';
       g.stroke();
     }
 
     // oyuncu oku
     g.save();
-    g.translate(oyuncu.konum.x * olcek, oyuncu.konum.z * olcek);
+    g.translate((oyuncu.konum.x - ox) * olcek, (oyuncu.konum.z - oz) * olcek);
     g.rotate(-oyuncu.yon);
+    g.scale(k, k);
     g.beginPath();
     g.moveTo(0, -10);
     g.lineTo(7, 8);
@@ -83,12 +123,12 @@ export class Harita {
     g.restore();
 
     // kuzey işareti
-    g.font = 'bold 15px "Trebuchet MS", sans-serif';
+    g.font = `bold ${15 * k}px "Trebuchet MS", sans-serif`;
     g.textAlign = 'center';
     g.lineWidth = 3;
     g.strokeStyle = 'rgba(30,36,46,0.8)';
     g.fillStyle = '#fff';
-    g.strokeText('K', boyut / 2, 16);
-    g.fillText('K', boyut / 2, 16);
+    g.strokeText('K', boyut / 2, 16 * k);
+    g.fillText('K', boyut / 2, 16 * k);
   }
 }

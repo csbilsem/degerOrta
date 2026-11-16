@@ -18,7 +18,7 @@ export const KARAKTERLER = [
       dugumler: {
         karsilama: {
           metin: [
-            'Hoş geldin evladım! Ben bu köyün Dedesiyim.',
+            'Hoş geldin {ad}! Ben bu köyün Dedesiyim.',
             'Köyümüz bir zamanlar rengârenkti. İnsanlar doğruluğu, merhameti, adabı ve vatan sevgisini unutunca renklerimiz de soldu.',
             'Köyü yeniden canlandırmak için senin gibi bir kalp kahramanına ihtiyacımız var.',
           ],

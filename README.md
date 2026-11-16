@@ -25,6 +25,7 @@ python3 sunucu.py
 | Sol tık | Hedeflenen bloğu kır (çantaya eklenir) |
 | Sağ tık | Seçili bloğu yerleştir |
 | 1–9 / fare tekerleği | Çantadan blok seç |
+| M | Harita görünümü: bütün köy / yakın / büyük harita |
 | V | Birinci / üçüncü şahıs kamera |
 | Esc | Duraklat |
 | F3 | Bilgi ekranı (açıkken 1-4 ve 0 tuşları bölgeleri renklendirmeyi dener) |
@@ -39,7 +40,7 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - [x] 2. Köy haritası ve dört bölgenin yerleşimi (blok kırma / yerleştirme dahil)
 - [x] 3. Karakterler ve diyalog sistemi
 - [x] 4. Görevler ve karar sistemi (12 görev, görev paneli, mini harita, ışıklı yön işaretleri, tarayıcıya kayıt)
-- [ ] 5. Değer puanı, değer blokları ve anıt inşası
+- [x] 5. Değer puanı, değer blokları ve anıt inşası (takma ad, tam kayıt, sıfırlama, harita yakınlaştırma)
 - [ ] 6. Renklenme efekti, ses ve son ekran
 - [ ] 7. Öğrencilerle deneme oynanışı ve düzeltmeler
 

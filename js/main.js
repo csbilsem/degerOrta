@@ -125,6 +125,38 @@ const gorevler = new Gorevler({
 });
 harita = new Harita($('harita'), dunya);
 harita.tabanCiz(hedefDoygunluk);
+function haritaGorunumu(degistir = true) {
+  const g = degistir ? harita.gorunumDegistir() : harita.gorunum || 0;
+  $('harita-ipucu').textContent =
+    ['Bütün köy', 'Yakın görünüm', 'Büyük harita'][g] + (dokunmatik ? ' · dokun: değiştir' : ' · M: değiştir');
+}
+$('harita').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  haritaGorunumu();
+});
+
+// Kaldığı yerden devam: son konum ve oyuncu adı
+if (gorevler.kayit.konum) {
+  const [kx, ky, kz, kyon] = gorevler.kayit.konum;
+  if (!dunya.kati(kx, ky, kz) && !dunya.kati(kx, ky + 1, kz)) oyuncu.isinla(kx, ky, kz, kyon);
+}
+setInterval(() => {
+  if (oynuyor) gorevler.konumKaydet(oyuncu);
+}, 3000);
+const adKutusu = $('oyuncu-adi');
+adKutusu.value = gorevler.kayit.ad || '';
+function adiUygula() {
+  const ad = adKutusu.value.trim().replace(/[<>{}]/g, '').slice(0, 14);
+  if (ad !== gorevler.kayit.ad) gorevler.adKoy(ad);
+  diyalog.oyuncuAdi = ad;
+  document.querySelector('.oyun-adi').textContent = ad ? `Kalbin Kahramanları · ${ad}` : 'Kalbin Kahramanları';
+}
+adiUygula();
+adKutusu.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.code === 'Enter') baslat();
+});
 $('sifirla').classList.toggle('gizli', !gorevler.kayitVarMi());
 if (gorevler.kayitVarMi()) $('basla').textContent = 'Kaldığın Yerden Devam Et';
 $('sifirla').addEventListener('click', () => {
@@ -152,6 +184,8 @@ function dokunmatikAc() {
 window.addEventListener('touchstart', dokunmatikAc, { capture: true, passive: true });
 
 function baslat() {
+  adiUygula();
+  adKutusu.blur();
   if (dokunmatik || !tuval.requestPointerLock) return surukleModunaGec();
   try {
     const istek = tuval.requestPointerLock();
@@ -181,6 +215,7 @@ function arayuzuGuncelle() {
   $('hud').classList.toggle('gizli', !oynuyor);
   $('dokunmatik').classList.toggle('gizli', !(oynuyor && dokunmatik));
   $('surukle-ipucu').classList.toggle('gizli', !surukleModu);
+  if (harita) haritaGorunumu(false);
   if (!oynuyor) {
     oyuncu.tuslar.clear();
     $('basla').textContent = oynandi ? 'Devam Et' : gorevler.kayitVarMi() ? 'Kaldığın Yerden Devam Et' : 'Oyuna Başla';
@@ -270,6 +305,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if (e.code === 'KeyE' && !e.repeat) return konus();
+  if (e.code === 'KeyM' && !e.repeat) return haritaGorunumu();
   if (e.code === 'KeyV' && !e.repeat) oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis;
   // Deneme kısayolu (yalnızca F3 açıkken): 1-4 bölgeleri, 0 meydanı renklendirir
   if (hataAyiklama && !e.repeat && /^Digit[0-4]$/.test(e.code)) {

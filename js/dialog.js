@@ -89,9 +89,10 @@ export class Diyalog {
   }
 
   _ciz() {
+    const adKoy = (m) => m.replaceAll('{ad}', this.oyuncuAdi || 'evladım');
     this.adEl.textContent = this.dugum.konusan || this.karakter.ad;
     this.kok.classList.toggle('anlatici', this.dugum.konusan === 'Anlatıcı');
-    this.metinEl.textContent = this.sayfalar[this.sayfa];
+    this.metinEl.textContent = adKoy(this.sayfalar[this.sayfa]);
     this.secenekEl.innerHTML = '';
     const secenekli = this.seceneklerGorunur;
     if (secenekli) {
@@ -100,7 +101,7 @@ export class Diyalog {
         el.className = 'd-secenek' + (i === this.secili ? ' secili' : '');
         el.dataset.i = i;
         el.innerHTML = `<span class="d-no">${i + 1}</span>`;
-        el.appendChild(document.createTextNode(s.metin));
+        el.appendChild(document.createTextNode(adKoy(s.metin)));
         this.secenekEl.appendChild(el);
       });
     }

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Kalbin Kahramanları</title>
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
   <canvas id="oyun"></canvas>
@@ -31,6 +31,7 @@
     </div>
     <div id="gorev-paneli"></div>
     <canvas id="harita" width="340" height="340"></canvas>
+    <div id="harita-ipucu"></div>
   </div>
   <div id="dokunmatik" class="gizli">
     <div id="kol"><div id="kol-topuz"></div></div>
@@ -56,6 +57,7 @@
         <li><b>Kır / Koy:</b> blok kır, yerleştir</li>
         <li><b>Zıpla:</b> zıpla</li>
         <li><b>Alttaki kutular:</b> blok seç</li>
+        <li><b>Haritaya dokun:</b> yakınlaştır / büyüt</li>
         <li><b>II:</b> duraklat</li>
       </ul>
       <ul class="tuslar klavye-yardim">
@@ -67,13 +69,19 @@
         <li><kbd>Sol tık</kbd> blok kır</li>
         <li><kbd>Sağ tık</kbd> blok yerleştir</li>
         <li><kbd>1</kbd>–<kbd>9</kbd> / tekerlek: blok seç</li>
+        <li><kbd>M</kbd> haritayı yakınlaştır / büyüt</li>
         <li><kbd>V</kbd> kamerayı değiştir</li>
         <li><kbd>Esc</kbd> duraklat</li>
       </ul>
+      <label class="ad-alani">
+        <span>Takma adın:</span>
+        <input id="oyuncu-adi" type="text" maxlength="14" placeholder="örn. Kahraman" autocomplete="off" autocapitalize="words" spellcheck="false">
+      </label>
+      <p class="ad-notu">Gerçek adını yazmak zorunda değilsin. Adın yalnızca bu cihazda saklanır.</p>
       <button id="basla">Oyuna Başla</button>
       <button id="sifirla" class="gizli">Baştan Başla</button>
       <p id="hata" class="gizli"></p>
-      <p class="surum">sürüm 0.4.0</p>
+      <p class="surum">sürüm 0.5.0</p>
     </div>
   </div>
 
@@ -99,6 +107,6 @@
       });
     })();
   </script>
-  <script type="module" src="js/main.js?v=5" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
+  <script type="module" src="js/main.js?v=6" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
 </body>
 </html>

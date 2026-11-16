@@ -115,7 +115,28 @@ export class Envanter {
     return id;
   }
 
+  // Çantayı kayıt için düz veriye çevirir / kayıttan geri yükler
+  disaAktar() {
+    return { secili: this.secili, yuvalar: this.yuvalar.map((v) => [v.id, v.adet]) };
+  }
+
+  yukle(veri) {
+    if (!veri || !Array.isArray(veri.yuvalar) || veri.yuvalar.length !== 9) return false;
+    veri.yuvalar.forEach(([id, adet], i) => {
+      const v = this.yuvalar[i];
+      if (v.sabit) v.adet = adet;
+      else if (BLOKLAR[id]) {
+        v.id = adet > 0 ? id : 0;
+        v.adet = adet > 0 ? adet : 0;
+      }
+    });
+    this.secili = veri.secili ?? 4;
+    this.ciz();
+    return true;
+  }
+
   ciz() {
+    if (this.degisti) this.degisti();
     this.kok.innerHTML = '';
     this.yuvalar.forEach((y, i) => {
       const el = document.createElement('div');
@@ -176,6 +197,7 @@ export class Etkilesim {
     }
     this.dunya.koy(h.x, h.y, h.z, B.HAVA);
     this.dunya.blokDegisti(h.x, h.z);
+    if (this.kaydedici) this.kaydedici(h.x, h.y, h.z, B.HAVA);
     if (this.degisince) this.degisince();
     return true;
   }
@@ -206,6 +228,7 @@ export class Etkilesim {
     const id = this.envanter.harca();
     this.dunya.koy(x, y, z, id);
     this.dunya.blokDegisti(x, z);
+    if (this.kaydedici) this.kaydedici(x, y, z, id);
     if (this.degisince) this.degisince();
     return true;
   }
