@@ -9,6 +9,9 @@ import { Diyalog } from './dialog.js';
 import { KARAKTERLER } from './data/karakterler.js';
 import { Gorevler } from './quests.js';
 import { Harita } from './minimap.js';
+import { Ses } from './audio.js';
+import { sonEkraniDoldur, ozetiDoldur, csvUret } from './endscreen.js';
+import { BOLGE_RENKLERI } from './quests.js';
 
 const $ = (id) => document.getElementById(id);
 const tuval = $('oyun');
@@ -46,13 +49,17 @@ function mesajGoster(metin, sure = 3200) {
 const envanter = new Envanter($('envanter'), $('secili-ad'));
 envanter.ekle(B.TAHTA, 12); // başlangıç malzemesi
 envanter.ekle(B.TAS, 12);
+const ses = new Ses();
+const sesCal = (ad, gecikme) => ses.cal(ad, gecikme);
 const etkilesim = new Etkilesim(dunya, oyuncu, envanter, mesajGoster);
+etkilesim.ses = sesCal;
 sahne.add(etkilesim.cerceve);
 
 // ---------- Karakterler ve konuşma ----------
 const karakterler = new Karakterler(dunya, KARAKTERLER);
 sahne.add(karakterler.grup);
 const diyalog = new Diyalog($('diyalog'));
+diyalog.ses = sesCal;
 let yakinKarakter = null;
 let konusulan = null;
 diyalog.kapaninca = () => {
@@ -94,10 +101,95 @@ sahne.add(bulutlar);
 // ---------- Bölge renklenmesi ----------
 // hedefDoygunluk: her bölgenin ulaşmak istediği renk miktarı (0.12 = gri, 1 = tam renk)
 const hedefDoygunluk = [0.12, 0.12, 0.12, 0.12, 0.12];
-function bolgeyiRenklendir(no, acik = true, aninda = false) {
-  hedefDoygunluk[no] = acik ? 1 : 0.12;
-  if (aninda) dunya.doygunluk.value[no] = hedefDoygunluk[no];
+const BOLGE_MERKEZLERI = [[64, 64], [98, 64], [30, 64], [64, 98], [64, 26]];
+let dalga = null; // yayılmakta olan renk dalgası { no, r }
+let gokOrani = 0;
+
+// Bir bölgeyi renklendirir. aninda değilse renk, bölgenin merkezinden dalga gibi yayılır.
+function bolgeyiRenklendir(no, aninda = false) {
+  if (aninda) {
+    hedefDoygunluk[no] = 1;
+    dunya.doygunluk.value[no] = 1;
+    if (harita) harita.tabanCiz(hedefDoygunluk);
+    return;
+  }
+  if (dalga) dalgayiBitir();
+  dalga = { no, r: 0 };
+  dunya.dalga.value.set(BOLGE_MERKEZLERI[no][0], BOLGE_MERKEZLERI[no][1], 0, no);
+}
+function dalgayiBitir() {
+  hedefDoygunluk[dalga.no] = 1;
+  dunya.doygunluk.value[dalga.no] = 1;
+  dunya.dalga.value.set(0, 0, -1, -1);
+  dalga = null;
   if (harita) harita.tabanCiz(hedefDoygunluk);
+}
+
+// ---------- Konfeti ----------
+const KONFETI_ADET = 420;
+const konfeti = {
+  konum: new Float32Array(KONFETI_ADET * 3).fill(-200),
+  renk: new Float32Array(KONFETI_ADET * 3),
+  hiz: new Float32Array(KONFETI_ADET * 3),
+  omur: new Float32Array(KONFETI_ADET),
+  sira: 0,
+};
+const konfetiGeo = new THREE.BufferGeometry();
+konfetiGeo.setAttribute('position', new THREE.BufferAttribute(konfeti.konum, 3));
+konfetiGeo.setAttribute('color', new THREE.BufferAttribute(konfeti.renk, 3));
+const konfetiNoktalar = new THREE.Points(
+  konfetiGeo,
+  new THREE.PointsMaterial({ size: 0.2, vertexColors: true, fog: false })
+);
+konfetiNoktalar.frustumCulled = false;
+sahne.add(konfetiNoktalar);
+function konfetiPatlat(x, y, z, renkler, adet = 140, guc = 7) {
+  const c = new THREE.Color();
+  for (let n = 0; n < adet; n++) {
+    const i = konfeti.sira;
+    konfeti.sira = (konfeti.sira + 1) % KONFETI_ADET;
+    const aci = Math.random() * Math.PI * 2;
+    const yatay = Math.random() * guc * 0.6;
+    konfeti.konum.set([x, y, z], i * 3);
+    konfeti.hiz.set([Math.cos(aci) * yatay, guc * (0.5 + Math.random() * 0.7), Math.sin(aci) * yatay], i * 3);
+    c.setHex(renkler[n % renkler.length]);
+    konfeti.renk.set([c.r, c.g, c.b], i * 3);
+    konfeti.omur[i] = 2.2 + Math.random() * 1.6;
+  }
+  konfetiGeo.attributes.color.needsUpdate = true;
+}
+function konfetiGuncelle(dt) {
+  let canli = false;
+  for (let i = 0; i < KONFETI_ADET; i++) {
+    if (konfeti.omur[i] <= 0) continue;
+    canli = true;
+    konfeti.omur[i] -= dt;
+    const j = i * 3;
+    if (konfeti.omur[i] <= 0) {
+      konfeti.konum[j + 1] = -200;
+      continue;
+    }
+    konfeti.hiz[j + 1] -= 9 * dt;
+    konfeti.konum[j] += konfeti.hiz[j] * dt;
+    konfeti.konum[j + 1] += konfeti.hiz[j + 1] * dt;
+    konfeti.konum[j + 2] += konfeti.hiz[j + 2] * dt;
+  }
+  if (canli || konfeti.kirli) konfetiGeo.attributes.position.needsUpdate = true;
+  konfeti.kirli = canli;
+}
+// Bölge ya da anıt tamamlanınca kutlama
+function kutla(tur, bolge) {
+  if (tur === 'bolge') {
+    const p = oyuncu.konum;
+    const yon = oyuncu.bakisYonu();
+    konfetiPatlat(p.x + yon.x * 7, p.y + 2.5, p.z + yon.z * 7, [BOLGE_RENKLERI[bolge], 0xffffff, 0xf0b429], 160, 8);
+  } else {
+    const renkler = [BOLGE_RENKLERI[1], BOLGE_RENKLERI[2], BOLGE_RENKLERI[3], BOLGE_RENKLERI[4], 0xf0b429, 0xffffff];
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => konfetiPatlat(64.5 + (Math.random() - 0.5) * 6, 15, 64.5 + (Math.random() - 0.5) * 6, renkler, 120, 9), i * 700);
+    }
+    setTimeout(sonEkraniAc, 11000);
+  }
 }
 
 // ---------- Bildirim şeridi (bölge adı, görev tamamlandı) ----------
@@ -120,7 +212,9 @@ const gorevler = new Gorevler({
   sahne,
   mesaj: mesajGoster,
   bildir,
-  renklendir: (no, aninda) => bolgeyiRenklendir(no, true, aninda),
+  renklendir: (no, aninda) => bolgeyiRenklendir(no, aninda),
+  ses: sesCal,
+  kutla,
   panel: $('gorev-paneli'),
 });
 harita = new Harita($('harita'), dunya);
@@ -160,10 +254,68 @@ adKutusu.addEventListener('keydown', (e) => {
 $('sifirla').classList.toggle('gizli', !gorevler.kayitVarMi());
 if (gorevler.kayitVarMi()) $('basla').textContent = 'Kaldığın Yerden Devam Et';
 $('sifirla').addEventListener('click', () => {
+  bastanBasla();
+});
+function bastanBasla() {
   if (!window.confirm('Bütün ilerlemen silinecek ve oyun baştan başlayacak. Emin misin?')) return;
   gorevler.sifirla();
   window.location.reload();
+}
+
+// ---------- Son ekran, öğretmen özeti, ses ayarları ----------
+let katman = 'giris'; // oyun dururken gösterilen ekran: giris | son | ozet
+let ozetOncesi = 'giris';
+function sonEkraniAc() {
+  if (diyalog.acik) return setTimeout(sonEkraniAc, 2500);
+  sonEkraniDoldur($('son'), gorevler);
+  katman = 'son';
+  if (document.pointerLockElement === tuval) document.exitPointerLock();
+  else duraklat();
+}
+function ozetiAc() {
+  ozetOncesi = katman === 'ozet' ? ozetOncesi : katman;
+  ozetiDoldur($('ozet'), gorevler);
+  katman = 'ozet';
+  arayuzuGuncelle();
+}
+$('son-devam').addEventListener('click', () => {
+  katman = 'giris';
+  baslat();
 });
+$('son-ozet').addEventListener('click', ozetiAc);
+$('son-sifirla').addEventListener('click', bastanBasla);
+$('ozet-ac').addEventListener('click', ozetiAc);
+$('son-ac').addEventListener('click', sonEkraniAc);
+$('ozet-kapat').addEventListener('click', () => {
+  katman = ozetOncesi;
+  arayuzuGuncelle();
+});
+$('ozet-yazdir').addEventListener('click', () => window.print());
+$('ozet-indir').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csvUret(gorevler)], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'kalbin-kahramanlari-kararlar.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+function sesDugmeleri() {
+  $('ses-muzik').textContent = `Müzik: ${ses.ayar.muzik ? 'Açık' : 'Kapalı'}`;
+  $('ses-efekt').textContent = `Sesler: ${ses.ayar.efekt ? 'Açık' : 'Kapalı'}`;
+  $('ses-muzik').classList.toggle('kapali', !ses.ayar.muzik);
+  $('ses-efekt').classList.toggle('kapali', !ses.ayar.efekt);
+}
+$('ses-muzik').addEventListener('click', () => {
+  ses.baslat();
+  ses.ayarla('muzik', !ses.ayar.muzik);
+  sesDugmeleri();
+});
+$('ses-efekt').addEventListener('click', () => {
+  ses.baslat();
+  ses.ayarla('efekt', !ses.ayar.efekt);
+  sesDugmeleri();
+  ses.cal('dogru');
+});
+sesDugmeleri();
 
 // ---------- Oyun durumu ve girdiler ----------
 let oynuyor = false;
@@ -186,6 +338,8 @@ window.addEventListener('touchstart', dokunmatikAc, { capture: true, passive: tr
 function baslat() {
   adiUygula();
   adKutusu.blur();
+  ses.baslat();
+  katman = 'giris';
   if (dokunmatik || !tuval.requestPointerLock) return surukleModunaGec();
   try {
     const istek = tuval.requestPointerLock();
@@ -211,7 +365,8 @@ function surukleModunaGec() {
   arayuzuGuncelle();
 }
 function arayuzuGuncelle() {
-  $('giris').classList.toggle('gizli', oynuyor);
+  for (const ad of ['giris', 'son', 'ozet']) $(ad).classList.toggle('gizli', oynuyor || katman !== ad);
+  $('son-ac').classList.toggle('gizli', !gorevler.kayit.anit);
   $('hud').classList.toggle('gizli', !oynuyor);
   $('dokunmatik').classList.toggle('gizli', !(oynuyor && dokunmatik));
   $('surukle-ipucu').classList.toggle('gizli', !surukleModu);
@@ -307,11 +462,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' && !e.repeat) return konus();
   if (e.code === 'KeyM' && !e.repeat) return haritaGorunumu();
   if (e.code === 'KeyV' && !e.repeat) oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis;
-  // Deneme kısayolu (yalnızca F3 açıkken): 1-4 bölgeleri, 0 meydanı renklendirir
-  if (hataAyiklama && !e.repeat && /^Digit[0-4]$/.test(e.code)) {
-    const no = Number(e.code.slice(5));
-    bolgeyiRenklendir(no, hedefDoygunluk[no] < 1);
-  } else if (!e.repeat && /^Digit[1-9]$/.test(e.code)) {
+  if (!e.repeat && /^Digit[1-9]$/.test(e.code)) {
     envanter.sec(Number(e.code.slice(5)) - 1);
   }
   oyuncu.tuslar.add(e.code);
@@ -450,14 +601,18 @@ function kare(simdi) {
   }
 
   // Renklenme geçişi ve gökyüzü
-  const d = dunya.doygunluk.value;
-  let toplam = 0;
-  for (let i = 0; i < 5; i++) {
-    d[i] += (hedefDoygunluk[i] - d[i]) * Math.min(1, dt * 1.6);
-    toplam += d[i];
+  if (dalga) {
+    dalga.r += dt * 26;
+    dunya.dalga.value.z = dalga.r;
+    if (dalga.r > 125) dalgayiBitir();
   }
-  const oran = Math.max(0, (toplam / 5 - 0.12) / 0.88);
-  sahne.background.copy(GRI_GOK).lerp(MAVI_GOK, oran);
+  konfetiGuncelle(dt);
+  // Gökyüzü, renklenen bölge sayısına göre griden maviye döner; müzik de zenginleşir
+  let renkli = dalga ? 1 : 0;
+  for (let i = 0; i < 5; i++) if (hedefDoygunluk[i] === 1) renkli++;
+  ses.katman = renkli;
+  gokOrani += (renkli / 5 - gokOrani) * Math.min(1, dt * 0.7);
+  sahne.background.copy(GRI_GOK).lerp(MAVI_GOK, gokOrani);
   sahne.fog.color.copy(sahne.background);
 
   for (const bulut of bulutlar.children) {
@@ -482,7 +637,7 @@ function kare(simdi) {
       const p = oyuncu.konum;
       $('bilgi').textContent =
         `FPS: ${fps}\nKonum: ${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}\n` +
-        `Bölge: ${BOLGE_ADLARI[bolge]}\nDeneme: 1-4 bölge, 0 meydan renklendirir`;
+        `Bölge: ${BOLGE_ADLARI[bolge]}`;
     }
   }
 
@@ -492,4 +647,4 @@ function kare(simdi) {
 requestAnimationFrame(kare);
 
 // Sonraki aşamalar ve denemeler için dışa açılan nesne
-window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus, gorevler, harita };
+window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus, gorevler, harita, ses, sonEkraniAc, ozetiAc, konfetiPatlat };

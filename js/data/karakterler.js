@@ -75,7 +75,7 @@ export const KARAKTERLER = [
 
   // ---------- Doğruluk Çarşısı ----------
   {
-    kimlik: 'hasan', ad: 'Hasan Usta', x: 90.5, z: 56.5, bakis: 0,
+    kimlik: 'hasan', ad: 'Mehmet Usta', x: 90.5, z: 56.5, bakis: 0,
     gorunum: { tur: 'yetiskin', ust: 0xb5562f, alt: 0x3a3a3a, sac: 0x2b2b2b, onluk: 0xf1ede2 },
     diyalog: basit(
       'Buyur evlat, hoş geldin! En taze elmalar bende.',
@@ -91,7 +91,7 @@ export const KARAKTERLER = [
     ),
   },
   {
-    kimlik: 'zehra', ad: 'Zehra Teyze', x: 104.5, z: 56.5, bakis: 0,
+    kimlik: 'zehra', ad: 'Gülsüm Teyze', x: 104.5, z: 56.5, bakis: 0,
     gorunum: { tur: 'kadin', ust: 0x8a4f7d, alt: 0x5c3454, ortu: 0xe6d3a8 },
     diyalog: basit(
       'Hoş geldin yavrum. Baharat mı bakmıştın?',
@@ -99,7 +99,7 @@ export const KARAKTERLER = [
     ),
   },
   {
-    kimlik: 'nuri', ad: 'Nuri Bey', x: 90.5, z: 72.5, bakis: Math.PI,
+    kimlik: 'nuri', ad: 'Tahir Bey', x: 90.5, z: 72.5, bakis: Math.PI,
     gorunum: { tur: 'yetiskin', ust: 0x4f7d5a, alt: 0x33302c, sac: 0x7a7a7a, sakal: 0x7a7a7a },
     diyalog: basit(
       'Dükkânıma hoş geldin. Vazolarım el emeğidir, dikkatli bak olur mu?',
@@ -107,7 +107,7 @@ export const KARAKTERLER = [
     ),
   },
   {
-    kimlik: 'murat', ad: 'Murat Abi', x: 104.5, z: 72.5, bakis: Math.PI,
+    kimlik: 'murat', ad: 'Taha Abi', x: 104.5, z: 72.5, bakis: Math.PI,
     gorunum: { tur: 'yetiskin', ust: 0xd9a531, alt: 0x3b4a6b, sac: 0x1f1f1f },
     diyalog: basit(
       'Selam! Simit, ayran, ne istersen var.',
@@ -122,7 +122,7 @@ export const KARAKTERLER = [
     diyalog: basit('Miyav... (Pamuk topallıyor. Patisi incinmiş gibi görünüyor.)'),
   },
   {
-    kimlik: 'ayse', ad: 'Ayşe Nine', x: 50.5, z: 46.5, bakis: Math.PI / 2,
+    kimlik: 'ayse', ad: 'Emine Nine', x: 50.5, z: 46.5, bakis: Math.PI / 2,
     gorunum: { tur: 'kadin', yasli: true, ust: 0x5d6f8a, alt: 0x3e4a5c, ortu: 0xf4f4f4 },
     diyalog: basit(
       'Ah yavrum, hoş geldin. Dün geceki fırtına evimin güney duvarını yıktı.',
@@ -147,7 +147,7 @@ export const KARAKTERLER = [
 
   // ---------- Adap Konağı ----------
   {
-    kimlik: 'hatice', ad: 'Hatice Hanım', x: 60.5, z: 91.5, bakis: Math.PI,
+    kimlik: 'hatice', ad: 'Zehra Hanım', x: 60.5, z: 91.5, bakis: Math.PI,
     gorunum: { tur: 'kadin', ust: 0x7a4bb5, alt: 0x4d2f75, ortu: 0xd9c9ef },
     diyalog: basit(
       'Konağımıza hoş geldin. Bu kapıdan güzel sözle girilir.',
@@ -155,7 +155,7 @@ export const KARAKTERLER = [
     ),
   },
   {
-    kimlik: 'fatma', ad: 'Fatma Teyze', x: 59.5, z: 99.5, bakis: Math.PI,
+    kimlik: 'fatma', ad: 'Tuğba Teyze', x: 59.5, z: 99.5, bakis: Math.PI,
     gorunum: { tur: 'kadin', ust: 0xb5562f, alt: 0x6e3a22, ortu: 0xf1e0c5, onluk: 0xf4f4f4 },
     diyalog: basit(
       'Sofra odasına hoş geldin. Yemek birazdan hazır.',
@@ -163,7 +163,7 @@ export const KARAKTERLER = [
     ),
   },
   {
-    kimlik: 'ibrahim', ad: 'İbrahim Amca', x: 69.5, z: 99.5, bakis: Math.PI,
+    kimlik: 'ibrahim', ad: 'Beytullah Amca', x: 69.5, z: 99.5, bakis: Math.PI,
     gorunum: { tur: 'yasli', ust: 0x3e5c4a, alt: 0x3a3a3a, sapka: 0x6b4f3a, sakal: 0xdcdcdc },
     diyalog: basit(
       'Buyur evladım, misafir odamız burası.',
@@ -173,11 +173,52 @@ export const KARAKTERLER = [
 
   // ---------- Vatan Tepesi ----------
   {
-    kimlik: 'selim', ad: 'Selim Öğretmen', x: 61.5, y: 23, z: 28.5, bakis: 2.6,
+    kimlik: 'selim', ad: 'Sezgin Öğretmen', x: 61.5, y: 23, z: 28.5, bakis: 2.6,
     gorunum: { tur: 'yetiskin', ust: 0xc0392b, alt: 0x2c3e50, sac: 0x3b2a1a },
     diyalog: basit(
       'Tepeye hoş geldin! Buradan bütün köy görünür.',
       'Yamaçtaki altın renkli bilgi bloklarını gördün mü? Önce onları oku, sonra yanıma gel.'
+    ),
+  },
+  // ---------- Köyün çocukları (yol gösteren kısa sohbetler) ----------
+  {
+    kimlik: 'alya', ad: 'Alya', x: 69.5, z: 60.5, bakis: -2.2,
+    gorunum: { tur: 'cocuk', ust: 0xf07ab0, alt: 0x4a5a8a, sac: 0x3a2516, orgu: true },
+    diyalog: basit(
+      'Merhaba! Ben Alya. Köyümüz eskiden rengârenkmiş.',
+      'Dede ile konuştun mu? Ne yapacağını en iyi o anlatır.'
+    ),
+  },
+  {
+    kimlik: 'beren', ad: 'Beren', x: 70.7, z: 61.8, bakis: -2.0,
+    gorunum: { tur: 'cocuk', ust: 0x8ed0c2, alt: 0x6b4a8a, sac: 0x1f1f1f, orgu: true },
+    diyalog: basit(
+      'Ben Beren! Yolunu kaybedersen haritaya bak; renkli noktalar görevlerin yerini gösterir.',
+      'Haritayı büyütebildiğini biliyor muydun?'
+    ),
+  },
+  {
+    kimlik: 'serra', ad: 'Serra', x: 93.5, z: 61.5, bakis: 0.4,
+    gorunum: { tur: 'cocuk', ust: 0xf7d038, alt: 0x3b6ea8, sac: 0x5a3a22 },
+    diyalog: basit(
+      'Ben Serra. Annemle alışverişe geldik.',
+      'Annem der ki: "İyi esnaf, terazisini müşterisinin gözü önünde tartar." Satıcıları iyi gözlemle!'
+    ),
+  },
+  {
+    kimlik: 'abdussamed', ad: 'Abdussamed', x: 67.5, z: 86.5, bakis: Math.PI,
+    gorunum: { tur: 'cocuk', ust: 0x8e5bd6, alt: 0x3a3a3a, sac: 0x2b1d12 },
+    diyalog: basit(
+      'Selamün aleyküm! Ben Abdussamed.',
+      'Konağa girerken selam vermeyi unutma. Dedem "Selam, sözün en güzelidir" der.'
+    ),
+  },
+  {
+    kimlik: 'zeynep', ad: 'Zeynep', x: 61.5, z: 47.5, zeminden: true, bakis: 2.6,
+    gorunum: { tur: 'cocuk', ust: 0xe02a2a, alt: 0x2c3e50, sac: 0x3a2516, orgu: true },
+    diyalog: basit(
+      'Ben Zeynep! Yamaçtaki altın bilgi bloklarını gördün mü?',
+      'Hepsini dikkatle okursan tepedeki Sezgin Öğretmen\'in sorularını kolayca bilirsin.'
     ),
   },
   {

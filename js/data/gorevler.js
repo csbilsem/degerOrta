@@ -19,14 +19,14 @@ const ANLATICI = 'Anlatıcı';
 
 // Bir karar sorusunu düğümlere çevirir. Yanlış seçimde açıklama gösterilir ve
 // soruya geri dönülür; doğru seçimde tepki gösterilip `sonra` düğümüne geçilir.
-function soru(c, dugumler, ad, { konusan, metin, secenekler, sonra, dogruGiris }) {
+function soru(c, dugumler, ad, { konusan, metin, secenekler, sonra, dogruGiris, ozet }) {
   dugumler[ad] = {
     konusan,
     metin,
     secenekler: secenekler.map((s, i) => ({
       metin: s.metin,
       git: s.dogru ? `${ad}_dogru` : `${ad}_yanlis${i}`,
-      etki: () => c.karar(ad, i, !!s.dogru),
+      etki: () => c.karar(ad, i, !!s.dogru, ozet || (Array.isArray(metin) ? metin.join(' ') : metin), s.metin),
     })),
   };
   secenekler.forEach((s, i) => {
@@ -43,13 +43,13 @@ export const GOREVLER = [
     kimlik: 'd1',
     bolge: 1,
     ad: 'Dürüst Satıcı',
-    kim: 'Hasan Usta, Kemal Amca ve Zehra Teyze',
+    kim: 'Mehmet Usta, Kemal Amca ve Gülsüm Teyze',
     yonerge: 'Üç satıcının nasıl tarttığını gözlemle, dürüst olanı bul.',
     hedefler: ['hasan', 'kemal', 'zehra'],
     diyalog(k, c) {
       const gozlem = {
         hasan: [
-          'Hasan Usta\'dan bir kilo elma istiyorsun.',
+          'Mehmet Usta\'dan bir kilo elma istiyorsun.',
           'Elmaları teraziye koyuyor ve ibrenin durmasını bekliyor. İbre tam bir kiloyu gösteriyor. Teraziyi sana çevirip "Bak evlat, tam bir kilo" diyor.',
         ],
         kemal: [
@@ -57,7 +57,7 @@ export const GOREVLER = [
           'Elmaları tartarken parmağıyla kefeye hafifçe bastırdığını fark ediyorsun. İbre bir kiloyu gösteriyor ama poşet eline hafif geliyor.',
         ],
         zehra: [
-          'Zehra Teyze\'den bir kilo elma istiyorsun.',
+          'Gülsüm Teyze\'den bir kilo elma istiyorsun.',
           'Acelesi var; elmaları hiç tartmadan, göz kararı poşete dolduruyor. "Bir kilo vardır yavrum" diyor ama teraziye bakmıyor bile.',
         ],
       }[k.kimlik];
@@ -66,7 +66,7 @@ export const GOREVLER = [
         kemal:
           'Bir daha düşün: Kemal Amca tartarken parmağıyla kefeye bastırıyordu. Eksik tartmak, müşterinin hakkını almaktır. Diğer satıcıları da gözlemle.',
         zehra:
-          'Bir daha düşün: Zehra Teyze elmaları hiç tartmadı. Tartmadan satınca kimin hakkının kime geçtiği bilinemez. Diğer satıcıları da gözlemle.',
+          'Bir daha düşün: Gülsüm Teyze elmaları hiç tartmadı. Tartmadan satınca kimin hakkının kime geçtiği bilinemez. Diğer satıcıları da gözlemle.',
       }[k.kimlik];
       return {
         baslangic: 'gozlem',
@@ -79,7 +79,7 @@ export const GOREVLER = [
               {
                 metin: 'Evet, dürüst satıcı bu!',
                 git: k.kimlik === 'hasan' ? 'dogru' : 'yanlis',
-                etki: () => c.karar('d1_satici_' + k.kimlik, 0, k.kimlik === 'hasan'),
+                etki: () => c.karar('d1_satici', 0, k.kimlik === 'hasan', 'Terazisini doğru tartan dürüst satıcı hangisi?', k.ad),
               },
               { metin: 'Emin değilim; diğer satıcılara da bakayım.' },
             ],
@@ -105,8 +105,8 @@ export const GOREVLER = [
     kimlik: 'd2',
     bolge: 1,
     ad: 'Kırık Vazo',
-    kim: 'Nuri Bey',
-    yonerge: 'Nuri Bey\'in dükkânına uğra.',
+    kim: 'Tahir Bey',
+    yonerge: 'Tahir Bey\'in dükkânına uğra.',
     hedefler: ['nuri'],
     diyalog(k, c) {
       if (k.kimlik !== 'nuri') return null;
@@ -119,26 +119,27 @@ export const GOREVLER = [
           konusan: ANLATICI,
           metin: [
             'Rafları incelerken dirseğin bir vazoya çarpıyor. Şangır! Vazo yere düşüp kırılıyor.',
-            'Nuri Bey\'in arkası dönük; hiçbir şey görmedi.',
+            'Tahir Bey\'in arkası dönük; hiçbir şey görmedi.',
           ],
           git: 'vazo',
         },
         son: { metin: 'Kırılan vazo yerine konur; kırılan güven ise kolay kolay yerine gelmez. Aferin sana!', giris: c.tamamla },
       };
       soru(c, d, 'vazo', {
+        ozet: 'Dükkânda yanlışlıkla bir vazo kırdın; satıcı görmedi. Ne yaparsın?',
         konusan: ANLATICI,
         metin: 'Ne yaparsın?',
         sonra: 'son',
         secenekler: [
           {
-            metin: 'Nuri Bey\'e gidip vazoyu yanlışlıkla kırdığımı söyler, özür dilerim.',
+            metin: 'Tahir Bey\'e gidip vazoyu yanlışlıkla kırdığımı söyler, özür dilerim.',
             dogru: true,
             tepki: 'Vazoya üzüldüm ama doğruyu söylemene çok sevindim. Hatasını söyleyebilen insan güvenilir insandır.',
           },
           {
             metin: 'Kimse görmedi; parçaları rafın arkasına saklayıp uzaklaşırım.',
             tepki:
-              'Bir daha düşün: Nuri Bey vazoyu aradığında kimin kırdığını bilemeyecek, belki başkasından şüphelenecek. Hatayı saklamak onu yok etmez; içindeki huzursuzluğu büyütür.',
+              'Bir daha düşün: Tahir Bey vazoyu aradığında kimin kırdığını bilemeyecek, belki başkasından şüphelenecek. Hatayı saklamak onu yok etmez; içindeki huzursuzluğu büyütür.',
           },
           {
             metin: '"Kedi devirdi" derim.',
@@ -155,8 +156,8 @@ export const GOREVLER = [
     kimlik: 'd3',
     bolge: 1,
     ad: 'Fazla Para Üstü',
-    kim: 'Murat Abi',
-    yonerge: 'Murat Abi\'nin tezgâhından bir simit al.',
+    kim: 'Taha Abi',
+    yonerge: 'Taha Abi\'nin tezgâhından bir simit al.',
     hedefler: ['murat'],
     diyalog(k, c) {
       if (k.kimlik !== 'murat') return null;
@@ -166,7 +167,7 @@ export const GOREVLER = [
           konusan: ANLATICI,
           metin: [
             'Bir simit alıp yirmi lira veriyorsun. Tezgâh çok kalabalık.',
-            'Murat Abi dalgınlıkla sana on beş lira yerine yirmi beş lira para üstü veriyor.',
+            'Taha Abi dalgınlıkla sana on beş lira yerine yirmi beş lira para üstü veriyor.',
           ],
           git: 'para',
         },
@@ -178,14 +179,14 @@ export const GOREVLER = [
         sonra: 'son',
         secenekler: [
           {
-            metin: '"Murat Abi, bana on lira fazla verdin" deyip fazlasını geri veririm.',
+            metin: '"Taha Abi, bana on lira fazla verdin" deyip fazlasını geri veririm.',
             dogru: true,
             tepki: 'Vay, hiç fark etmemiştim! Akşam kasam eksik çıkacaktı. Çok teşekkür ederim.',
           },
           {
             metin: 'Sesimi çıkarmam, fazla parayı cebime koyarım.',
             tepki:
-              'Bir daha düşün: O para senin değil. Akşam kasasını saydığında Murat Abi\'nin parası eksik çıkacak. Hakkın olmayanı almak, kimse görmese de doğru değildir.',
+              'Bir daha düşün: O para senin değil. Akşam kasasını saydığında Taha Abi\'nin parası eksik çıkacak. Hakkın olmayanı almak, kimse görmese de doğru değildir.',
           },
           {
             metin: 'Hata onun; ben istemedim ki, bende kalabilir.',
@@ -219,6 +220,7 @@ export const GOREVLER = [
         },
       };
       soru(c, d, 'kedi', {
+        ozet: 'Bahçede yaralı, aç bir kedi gördün. Ne yaparsın?',
         konusan: ANLATICI,
         metin: 'Ne yaparsın?',
         dogruGiris: c.insaBaslat,
@@ -259,8 +261,8 @@ export const GOREVLER = [
     kimlik: 'm2',
     bolge: 2,
     ad: 'Komşunun Evi',
-    kim: 'Ayşe Nine',
-    yonerge: 'Bahçenin kuzeydoğusundaki evin önünde Ayşe Nine ile konuş.',
+    kim: 'Emine Nine',
+    yonerge: 'Bahçenin kuzeydoğusundaki evin önünde Emine Nine ile konuş.',
     hedefler: ['ayse'],
     diyalog(k, c) {
       if (k.kimlik !== 'ayse') return null;
@@ -274,12 +276,13 @@ export const GOREVLER = [
         },
       };
       soru(c, d, 'ev', {
+        ozet: 'Yaşlı komşunun evinin duvarı fırtınada yıkıldı. Ne yaparsın?',
         konusan: ANLATICI,
         metin: 'Ne yaparsın?',
         dogruGiris: c.insaBaslat,
         secenekler: [
           {
-            metin: '"Merak etme Ayşe Nine, duvarını ben onarırım" derim.',
+            metin: '"Merak etme Emine Nine, duvarını ben onarırım" derim.',
             dogru: true,
             tepki: [
               'Allah senden razı olsun yavrum! Al, bu sıva bloklarını kullan.',
@@ -289,7 +292,7 @@ export const GOREVLER = [
           {
             metin: 'Çok işim var; başka zaman bakarım.',
             tepki:
-              'Bir daha düşün: Ayşe Nine bu gece de soğukta kalacak. Yardım, ihtiyaç olduğu anda yapılınca kıymetlidir.',
+              'Bir daha düşün: Emine Nine bu gece de soğukta kalacak. Yardım, ihtiyaç olduğu anda yapılınca kıymetlidir.',
           },
           {
             metin: 'Bu benim işim değil; ustalar yapsın.',
@@ -304,10 +307,10 @@ export const GOREVLER = [
       hedefler: DUVAR_BOSLUKLARI,
       varsayilan: B.DUVAR,
       merkez: { x: 46, y: 11, z: 50.5 },
-      adim: (n, t) => `Ayşe Nine'nin duvarını onar: ${n}/${t}`,
+      adim: (n, t) => `Emine Nine'nin duvarını onar: ${n}/${t}`,
       hatirlatma: 'Evin güney duvarındaki işaretli boşlukları sıva bloklarıyla doldurabilir misin yavrum?',
-      bitis: 'Ayşe Nine: "Evim yeniden sıcacık oldu! Komşusuna yardım edenin gönlü de güzelleşir."',
-      koru: 'Ayşe Nine\'nin duvarını yeni onardın; yerinde kalsın.',
+      bitis: 'Emine Nine: "Evim yeniden sıcacık oldu! Komşusuna yardım edenin gönlü de güzelleşir."',
+      koru: 'Emine Nine\'nin duvarını yeni onardın; yerinde kalsın.',
     },
     sonSoz: { ayse: 'Sayende bu gece rahat uyuyacağım. Elin dert görmesin yavrum.' },
   },
@@ -373,8 +376,8 @@ export const GOREVLER = [
     kimlik: 'a1',
     bolge: 3,
     ad: 'Selam Kapısı',
-    kim: 'Hatice Hanım',
-    yonerge: 'Konağın kapısındaki Hatice Hanım ile konuş.',
+    kim: 'Zehra Hanım',
+    yonerge: 'Konağın kapısındaki Zehra Hanım ile konuş.',
     hedefler: ['hatice'],
     diyalog(k, c) {
       if (k.kimlik !== 'hatice') return null;
@@ -396,27 +399,27 @@ export const GOREVLER = [
           },
           {
             metin: 'Kapı açıksa çalmadan içeri girerim.',
-            konusan: 'Hatice Hanım',
+            konusan: 'Zehra Hanım',
             tepki:
               'Bir daha düşün evladım: İzin almadan girmek ev halkını rahatsız eder. Önce kapı çalınır, selam verilir, izin istenir.',
           },
           {
             metin: 'Kapıya vurup "Açın kapıyı!" diye seslenirim.',
-            konusan: 'Hatice Hanım',
+            konusan: 'Zehra Hanım',
             tepki: 'Bir daha düşün evladım: Kaba söz kapıları kapatır. Nazik bir selam ise hem kapıyı hem gönülleri açar.',
           },
         ],
       });
       return { baslangic: 'giris', dugumler: d };
     },
-    sonSoz: { hatice: 'Selamün aleyküm evladım! İçeri buyur; Fatma Teyze ile İbrahim Amca seni bekliyor.' },
+    sonSoz: { hatice: 'Selamün aleyküm evladım! İçeri buyur; Tuğba Teyze ile Beytullah Amca seni bekliyor.' },
   },
   {
     kimlik: 'a2',
     bolge: 3,
     ad: 'Sofra Odası',
-    kim: 'Fatma Teyze (konağın içinde)',
-    yonerge: 'Konağın içinde, Fatma Teyze\'nin sofrasına otur.',
+    kim: 'Tuğba Teyze (konağın içinde)',
+    yonerge: 'Konağın içinde, Tuğba Teyze\'nin sofrasına otur.',
     hedefler: ['fatma'],
     diyalog(k, c) {
       if (k.kimlik !== 'fatma') return null;
@@ -441,7 +444,7 @@ export const GOREVLER = [
           },
           {
             metin: 'Yemek soğumasın; hemen yemeye başlarım.',
-            konusan: 'Fatma Teyze',
+            konusan: 'Tuğba Teyze',
             tepki: 'Bir daha düşün: Sofra birlikte güzeldir. Herkes gelmeden yemeye başlamak sofradakilere saygısızlık olur.',
           },
         ],
@@ -457,7 +460,7 @@ export const GOREVLER = [
           },
           {
             metin: 'Hiçbir şey demeden hızlıca yemeye koyulurum.',
-            konusan: 'Fatma Teyze',
+            konusan: 'Tuğba Teyze',
             tepki:
               'Bir daha düşün: Önümüzdeki yemek bir nimettir. Besmeleyle başlamak, bu nimetin kıymetini bildiğimizi gösterir.',
           },
@@ -474,7 +477,7 @@ export const GOREVLER = [
           },
           {
             metin: 'Tabağımı tepeleme doldururum; yiyemezsem kalsın.',
-            konusan: 'Fatma Teyze',
+            konusan: 'Tuğba Teyze',
             tepki: 'Bir daha düşün: Tabakta kalan yemek çöpe gider. İsraf, nimetin kıymetini bilmemektir; ihtiyacın kadarını almalısın.',
           },
         ],
@@ -487,8 +490,8 @@ export const GOREVLER = [
     kimlik: 'a3',
     bolge: 3,
     ad: 'Misafir Odası',
-    kim: 'İbrahim Amca (konağın içinde)',
-    yonerge: 'Konağın içinde İbrahim Amca ile konuş.',
+    kim: 'Beytullah Amca (konağın içinde)',
+    yonerge: 'Konağın içinde Beytullah Amca ile konuş.',
     hedefler: ['ibrahim'],
     diyalog(k, c) {
       if (k.kimlik !== 'ibrahim') return null;
@@ -513,7 +516,7 @@ export const GOREVLER = [
           },
           {
             metin: 'Kapıyı açar, bir şey demeden odama giderim.',
-            konusan: 'İbrahim Amca',
+            konusan: 'Beytullah Amca',
             tepki: 'Bir daha düşün: Misafir kendini istenmiyor sanır. Güler yüz ve "hoş geldiniz" demek en kolay, en değerli ikramdır.',
           },
         ],
@@ -529,7 +532,7 @@ export const GOREVLER = [
           },
           {
             metin: 'En güzellerini kendime ayırır, kalanını götürürüm.',
-            konusan: 'İbrahim Amca',
+            konusan: 'Beytullah Amca',
             tepki: 'Bir daha düşün: İkramın güzeli misafire sunulur. Kendimiz için istediğimizi misafirimiz için de istemeliyiz.',
           },
         ],
@@ -545,12 +548,12 @@ export const GOREVLER = [
           },
           {
             metin: 'O anlatırken telefonumla oynarım.',
-            konusan: 'İbrahim Amca',
+            konusan: 'Beytullah Amca',
             tepki: 'Bir daha düşün: Konuşan kişi önemsenmediğini düşünür. Nezaket, karşındakine dikkatini vermektir.',
           },
           {
             metin: 'Sözünü kesip kendi anımı anlatırım.',
-            konusan: 'İbrahim Amca',
+            konusan: 'Beytullah Amca',
             tepki: 'Bir daha düşün: Söz kesmek kabalıktır. Önce dinler, sıramız gelince konuşuruz.',
           },
         ],
@@ -572,14 +575,14 @@ export const GOREVLER = [
     hedefler: ['bilgi-canakkale', 'bilgi-kurtulus', 'bilgi-15temmuz'],
     okunacak: ['bilgi-canakkale', 'bilgi-kurtulus', 'bilgi-15temmuz'],
     adim: (n, t) => `Bilgi bloklarını oku: ${n}/${t}`,
-    bitis: 'Üç bilgi bloğunu da okudun. Şimdi tepedeki Selim Öğretmen\'in yanına çık!',
+    bitis: 'Üç bilgi bloğunu da okudun. Şimdi tepedeki Sezgin Öğretmen\'in yanına çık!',
   },
   {
     kimlik: 'v2',
     bolge: 4,
     ad: 'Bilgi Kapısı',
-    kim: 'Selim Öğretmen (tepenin üstünde)',
-    yonerge: 'Tepenin üstündeki Selim Öğretmen\'in üç sorusunu cevapla.',
+    kim: 'Sezgin Öğretmen (tepenin üstünde)',
+    yonerge: 'Tepenin üstündeki Sezgin Öğretmen\'in üç sorusunu cevapla.',
     hedefler: ['selim'],
     diyalog(k, c) {
       if (k.kimlik !== 'selim') return null;
@@ -598,24 +601,24 @@ export const GOREVLER = [
         sonra: 'sinav2',
         secenekler: [
           { metin: '1915', dogru: true, tepki: 'Doğru! 18 Mart 1915\'te düşman donanması boğazda durduruldu. "Çanakkale geçilmez!"' },
-          { metin: '1922', konusan: 'Selim Öğretmen', tepki: 'Bir daha düşün: 1922, Büyük Taarruz\'un yılıdır. Çanakkale Zaferi ondan daha önce, Birinci Dünya Savaşı sırasında kazanıldı.' },
-          { metin: '2016', konusan: 'Selim Öğretmen', tepki: 'Bir daha düşün: 2016, 15 Temmuz\'un yılıdır. Çanakkale Zaferi yüz yıldan fazla bir süre önce kazanıldı.' },
+          { metin: '1922', konusan: 'Sezgin Öğretmen', tepki: 'Bir daha düşün: 1922, Büyük Taarruz\'un yılıdır. Çanakkale Zaferi ondan daha önce, Birinci Dünya Savaşı sırasında kazanıldı.' },
+          { metin: '2016', konusan: 'Sezgin Öğretmen', tepki: 'Bir daha düşün: 2016, 15 Temmuz\'un yılıdır. Çanakkale Zaferi yüz yıldan fazla bir süre önce kazanıldı.' },
         ],
       });
       soru(c, d, 'sinav2', {
         metin: 'Mustafa Kemal Paşa, Millî Mücadele\'yi başlatmak için 19 Mayıs 1919\'da hangi şehre çıktı?',
         sonra: 'sinav3',
         secenekler: [
-          { metin: 'İzmir', konusan: 'Selim Öğretmen', tepki: 'Bir daha düşün: İzmir, 9 Eylül 1922\'de işgalden kurtuldu. Millî Mücadele ise Karadeniz kıyısındaki bir şehirden başladı.' },
+          { metin: 'İzmir', konusan: 'Sezgin Öğretmen', tepki: 'Bir daha düşün: İzmir, 9 Eylül 1922\'de işgalden kurtuldu. Millî Mücadele ise Karadeniz kıyısındaki bir şehirden başladı.' },
           { metin: 'Samsun', dogru: true, tepki: 'Doğru! 19 Mayıs 1919\'da Samsun\'a çıkıldı. Bu yüzden 19 Mayıs\'ı bayram olarak kutlarız.' },
-          { metin: 'Ankara', konusan: 'Selim Öğretmen', tepki: 'Bir daha düşün: Ankara\'da 23 Nisan 1920\'de Meclis açıldı. Yolculuk ise deniz yoluyla varılan bir şehirden başladı.' },
+          { metin: 'Ankara', konusan: 'Sezgin Öğretmen', tepki: 'Bir daha düşün: Ankara\'da 23 Nisan 1920\'de Meclis açıldı. Yolculuk ise deniz yoluyla varılan bir şehirden başladı.' },
         ],
       });
       soru(c, d, 'sinav3', {
         metin: '15 Temmuz 2016 gecesi milletimiz ne yaptı?',
         sonra: 'son',
         secenekler: [
-          { metin: 'Evlerine kapanıp olanların bitmesini bekledi.', konusan: 'Selim Öğretmen', tepki: 'Bir daha düşün: O gece milletimiz beklemedi. Bilgi bloğunda insanların nereye çıktığını hatırla.' },
+          { metin: 'Evlerine kapanıp olanların bitmesini bekledi.', konusan: 'Sezgin Öğretmen', tepki: 'Bir daha düşün: O gece milletimiz beklemedi. Bilgi bloğunda insanların nereye çıktığını hatırla.' },
           { metin: 'Meydanlara çıkarak vatanına ve demokrasisine sahip çıktı.', dogru: true, tepki: 'Doğru! Milletimiz birlik olup darbe girişimini durdurdu. 15 Temmuz, Demokrasi ve Millî Birlik Günü\'dür.' },
         ],
       });
@@ -627,8 +630,8 @@ export const GOREVLER = [
     kimlik: 'v3',
     bolge: 4,
     ad: 'Bayrak ve Anıt',
-    kim: 'Selim Öğretmen (tepenin üstünde)',
-    yonerge: 'Selim Öğretmen ile konuş; bayrak direğini ve anıtı dik.',
+    kim: 'Sezgin Öğretmen (tepenin üstünde)',
+    yonerge: 'Sezgin Öğretmen ile konuş; bayrak direğini ve anıtı dik.',
     hedefler: ['selim'],
     diyalog(k, c) {
       if (k.kimlik !== 'selim') return null;
@@ -655,7 +658,7 @@ export const GOREVLER = [
           },
           {
             metin: 'Yalnızca bayramlarda bayrak asar; gerisi büyüklerin işidir.',
-            konusan: 'Selim Öğretmen',
+            konusan: 'Sezgin Öğretmen',
             tepki: 'Bir daha düşün: Vatan sevgisi yalnızca bayramlarda hatırlanmaz. Her gün görevini iyi yapmak, çalışmak ve çevreni korumak da vatan sevgisidir.',
           },
         ],

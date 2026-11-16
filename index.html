@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Kalbin Kahramanları</title>
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
   <canvas id="oyun"></canvas>
@@ -79,9 +79,42 @@
       </label>
       <p class="ad-notu">Gerçek adını yazmak zorunda değilsin. Adın yalnızca bu cihazda saklanır.</p>
       <button id="basla">Oyuna Başla</button>
-      <button id="sifirla" class="gizli">Baştan Başla</button>
+      <div class="kart-alt">
+        <button id="ses-muzik" class="kucuk-dugme">Müzik: Açık</button>
+        <button id="ses-efekt" class="kucuk-dugme">Sesler: Açık</button>
+        <button id="son-ac" class="kucuk-dugme gizli">Son Ekran</button>
+        <button id="ozet-ac" class="kucuk-dugme">Öğretmen Özeti</button>
+        <button id="sifirla" class="kucuk-dugme gizli">Baştan Başla</button>
+      </div>
       <p id="hata" class="gizli"></p>
-      <p class="surum">sürüm 0.5.0</p>
+      <p class="surum">sürüm 0.6.0</p>
+    </div>
+  </div>
+
+  <div id="son" class="katman gizli">
+    <div class="kart son-kart">
+      <p class="son-unvan">Kalbin Kahramanı</p>
+      <h1 class="son-baslik">Tebrikler!</h1>
+      <p>Değerler Anıtı'nı kurdun ve köyün renklerini geri getirdin. Bu değerleri kalbinde taşıdıkça renkler hiç solmayacak:</p>
+      <div class="son-degerler"></div>
+      <p class="son-sayilar"></p>
+      <button id="son-devam" class="ana-dugme">Köyde Gezmeye Devam Et</button>
+      <div class="kart-alt">
+        <button id="son-ozet" class="kucuk-dugme">Öğretmen Özeti</button>
+        <button id="son-sifirla" class="kucuk-dugme">Baştan Başla</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ozet" class="katman gizli">
+    <div class="kart ozet-kart">
+      <h2>Öğretmen Özeti · Karar İstatistikleri</h2>
+      <div class="ozet-icerik"></div>
+      <div class="kart-alt yazdirma">
+        <button id="ozet-yazdir" class="kucuk-dugme">Yazdır</button>
+        <button id="ozet-indir" class="kucuk-dugme">Veriyi İndir (CSV)</button>
+        <button id="ozet-kapat" class="kucuk-dugme">Kapat</button>
+      </div>
     </div>
   </div>
 
@@ -107,6 +140,6 @@
       });
     })();
   </script>
-  <script type="module" src="js/main.js?v=6" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
+  <script type="module" src="js/main.js?v=7" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
 </body>
 </html>

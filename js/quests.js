@@ -30,7 +30,9 @@ export class Gorevler {
   constructor(o) {
     Object.assign(this, o); // dunya, karakterler, envanter, etkilesim, sahne, mesaj, bildir, renklendir, panel
     this.gorevler = GOREVLER;
-    this.kayit = { ad: '', dede: false, anit: false, biten: [], insa: [], okunan: [], puan: [0, 0, 0, 0, 0], sorular: [], kararlar: [], dunya: {}, canta: null, konum: null };
+    this.ses = this.ses || (() => {});
+    this.kutla = this.kutla || (() => {});
+    this.kayit = { sure: 0, ad: '', dede: false, anit: false, biten: [], insa: [], okunan: [], puan: [0, 0, 0, 0, 0], sorular: [], kararlar: [], dunya: {}, canta: null, konum: null };
     this.anitSayisi = 0;
     this.isaretGrubu = new THREE.Group();
     this.hayaletGrubu = new THREE.Group();
@@ -82,7 +84,7 @@ export class Gorevler {
 
   baglam(q) {
     return {
-      karar: (soru, secim, dogru) => this.karar(q, soru, secim, dogru),
+      karar: (soru, secim, dogru, soruMetni, secimMetni) => this.karar(q, soru, secim, dogru, soruMetni, secimMetni),
       tamamla: () => this.tamamla(q),
       insaBaslat: () => this.insaBaslat(q),
     };
@@ -161,9 +163,10 @@ export class Gorevler {
   }
 
   // ---------- Kararlar ve puan ----------
-  karar(q, soru, secim, dogru) {
+  karar(q, soru, secim, dogru, soruMetni, secimMetni) {
+    this.ses(dogru ? 'dogru' : 'yanlis');
     const onceki = this.kayit.kararlar.filter((k) => k.soru === soru).length;
-    this.kayit.kararlar.push({ gorev: q.kimlik, soru, secim, dogru, deneme: onceki + 1, zaman: Date.now() });
+    this.kayit.kararlar.push({ gorev: q.kimlik, soru, secim, dogru, deneme: onceki + 1, zaman: Date.now(), soruMetni, secimMetni });
     if (dogru && !this.kayit.sorular.includes(soru)) {
       this.kayit.sorular.push(soru);
       this.kayit.puan[q.bolge] += KARAR_PUANI;
@@ -259,9 +262,12 @@ export class Gorevler {
       for (const h of q.insa.hedefler) if (h[3] && BLOKLAR[h[3]].gorevBlogu) this.envanter.cikar(h[3]);
     }
     this.bildirimKuyrugu.push(`Görev tamamlandı: ${q.ad}`);
+    this.ses('gorev', 0.35);
     if (q.bitis) this.mesaj(q.bitis, 6000);
     if (this.bolgeBitti(q.bolge)) {
       this.renklendir(q.bolge, false);
+      this.ses('bolge', 1.3);
+      this.kutla('bolge', q.bolge);
       const blok = DEGER_BLOKLARI[q.bolge - 1];
       this.envanter.ekle(blok, 1);
       this.bildirimKuyrugu.push(`${BOLGE_ADLARI[q.bolge]} renklendi! ${BLOKLAR[blok].ad} kazandın.`);
@@ -320,6 +326,8 @@ export class Gorevler {
       this.kayit.bitisZamani = Date.now();
       this.renklendir(0, sessiz);
       if (!sessiz) {
+        this.ses('anit', 0.4);
+        this.kutla('anit', 0);
         const ad = this.kayit.ad ? `, ${this.kayit.ad}` : '';
         this.bildirimKuyrugu.push('Değerler Anıtı tamamlandı!', 'Köy yeniden rengârenk!', `Artık sen bir Kalbin Kahramanısın${ad}!`);
         this.siradakiBildirim();
@@ -334,6 +342,7 @@ export class Gorevler {
   // ---------- Kayıt ----------
   konumKaydet(oyuncu) {
     const p = oyuncu.konum;
+    this.kayit.sure = (this.kayit.sure || 0) + 3;
     this.kayit.konum = [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2), +oyuncu.yon.toFixed(2)];
     this.kaydet();
   }

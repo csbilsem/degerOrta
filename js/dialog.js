@@ -34,6 +34,7 @@ export class Diyalog {
     this.acik = true;
     this.acildigiAn = performance.now();
     this.kok.classList.remove('gizli');
+    if (this.ses) this.ses('konus');
     this._dugumeGit(diyalog.baslangic);
   }
 
@@ -63,6 +64,7 @@ export class Diyalog {
   // E / tık / dokunma: sonraki sayfa, seçili seçenek ya da kapanış
   ilerle() {
     if (!this.acik || performance.now() - this.acildigiAn < 250) return;
+    if (this.ses && !this.seceneklerGorunur) this.ses('tik');
     if (this.sayfa < this.sayfalar.length - 1) {
       this.sayfa++;
       this._ciz();
@@ -78,6 +80,7 @@ export class Diyalog {
     const s = this.dugum.secenekler[i];
     if (!s) return;
     if (s.etki) s.etki();
+    else if (this.ses) this.ses('tik');
     this._dugumeGit(s.git);
   }
 
@@ -85,6 +88,7 @@ export class Diyalog {
     if (!this.seceneklerGorunur) return;
     const n = this.dugum.secenekler.length;
     this.secili = (this.secili + yon + n) % n;
+    if (this.ses) this.ses('gez');
     this._ciz();
   }
 

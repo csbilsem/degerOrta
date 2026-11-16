@@ -28,7 +28,7 @@ python3 sunucu.py
 | M | Harita görünümü: bütün köy / yakın / büyük harita |
 | V | Birinci / üçüncü şahıs kamera |
 | Esc | Duraklat |
-| F3 | Bilgi ekranı (açıkken 1-4 ve 0 tuşları bölgeleri renklendirmeyi dener) |
+| F3 | Bilgi ekranı (FPS, konum) |
 
 ### Tablet / telefon (dokunmatik)
 
@@ -41,7 +41,7 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - [x] 3. Karakterler ve diyalog sistemi
 - [x] 4. Görevler ve karar sistemi (12 görev, görev paneli, mini harita, ışıklı yön işaretleri, tarayıcıya kayıt)
 - [x] 5. Değer puanı, değer blokları ve anıt inşası (takma ad, tam kayıt, sıfırlama, harita yakınlaştırma)
-- [ ] 6. Renklenme efekti, ses ve son ekran
+- [x] 6. Renklenme efekti, ses ve son ekran (renk dalgası, konfeti, tarayıcıda üretilen müzik ve sesler, öğretmen özeti)
 - [ ] 7. Öğrencilerle deneme oynanışı ve düzeltmeler
 
 ## Dosya yapısı
@@ -58,5 +58,7 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - `js/quests.js` — görev durumu, kararlar, puan, yön işaretleri, kayıt
 - `js/minimap.js` — mini harita
 - `js/data/gorevler.js` — on iki görevin metinleri ve seçenekleri
+- `js/audio.js` — tarayıcıda üretilen müzik ve ses efektleri
+- `js/endscreen.js` — son ekran, öğretmen özeti, CSV dışa aktarma
 - `js/main.js` — ana döngü, girdiler, gösterge
 - `vendor/` — Three.js (MIT lisanslı)

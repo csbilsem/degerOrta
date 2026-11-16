@@ -198,6 +198,7 @@ export class Etkilesim {
     this.dunya.koy(h.x, h.y, h.z, B.HAVA);
     this.dunya.blokDegisti(h.x, h.z);
     if (this.kaydedici) this.kaydedici(h.x, h.y, h.z, B.HAVA);
+    if (this.ses) this.ses('kir');
     if (this.degisince) this.degisince();
     return true;
   }
@@ -229,6 +230,7 @@ export class Etkilesim {
     this.dunya.koy(x, y, z, id);
     this.dunya.blokDegisti(x, z);
     if (this.kaydedici) this.kaydedici(x, y, z, id);
+    if (this.ses) this.ses('koy');
     if (this.degisince) this.degisince();
     return true;
   }

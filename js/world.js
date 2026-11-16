@@ -43,6 +43,7 @@ export class World {
     // Bölge renk doygunlukları (0 = gri, 1 = tam renk); shader'a gider.
     // 6. değer (dizin 5) hep 1'dir: değer blokları her zaman renklidir.
     this.doygunluk = { value: new Float32Array([0.12, 0.12, 0.12, 0.12, 0.12, 1]) };
+    this.dalga = { value: new THREE.Vector4(0, 0, -1, -1) }; // renk dalgası: merkez x, z, yarıçap, bölge
     this.malzeme = this._malzemeOlustur();
     this._renkler = BLOKLAR.map((b) => new THREE.Color(b.renk));
     this.korumalar = new Map(); // "x,y,z" -> kırılamama açıklaması
@@ -101,15 +102,25 @@ export class World {
 
     const m = new THREE.MeshBasicMaterial({ map: doku, vertexColors: true });
     const doygunluk = this.doygunluk;
+    const dalga = this.dalga;
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uDoygunluk = doygunluk;
+      sh.uniforms.uDalga = dalga;
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nattribute float bolge;\nuniform float uDoygunluk[6];')
+        .replace('#include <common>', '#include <common>\nattribute float bolge;\nuniform float uDoygunluk[6];\nuniform vec4 uDalga;')
         .replace(
           '#include <color_vertex>',
           `#include <color_vertex>
            float dk_gri = dot(vColor.rgb, vec3(0.299, 0.587, 0.114));
-           vColor.rgb = mix(vec3(dk_gri), vColor.rgb, uDoygunluk[int(bolge + 0.5)]);`
+           float dk_s = uDoygunluk[int(bolge + 0.5)];
+           float dk_bant = 0.0;
+           if (abs(bolge - uDalga.w) < 0.5) {
+             // Bölge tamamlanınca merkezden yayılan renk dalgası ve parlak ön kenarı
+             float dk_u = distance(position.xz, uDalga.xy);
+             dk_s = max(dk_s, 1.0 - smoothstep(uDalga.z - 5.0, uDalga.z, dk_u));
+             dk_bant = 1.0 - smoothstep(0.0, 2.5, abs(dk_u - uDalga.z + 1.5));
+           }
+           vColor.rgb = mix(vec3(dk_gri), vColor.rgb, dk_s) + vec3(dk_bant * 0.28);`
         );
     };
     return m;
