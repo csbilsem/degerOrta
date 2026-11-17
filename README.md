@@ -26,6 +26,7 @@ python3 sunucu.py
 | Sağ tık | Seçili bloğu yerleştir |
 | 1–9 / fare tekerleği | Çantadan blok seç |
 | M | Harita görünümü: bütün köy / yakın / büyük harita |
+| N | Sesi aç / kapat (oyun içinde 🔊 düğmesi de var) |
 | V | Birinci / üçüncü şahıs kamera |
 | Esc | Duraklat |
 | F3 | Bilgi ekranı (FPS, konum) |
@@ -42,7 +43,14 @@ Dokunmatik cihazlarda ekran kumandaları kendiliğinden açılır: sol alttaki k
 - [x] 4. Görevler ve karar sistemi (12 görev, görev paneli, mini harita, ışıklı yön işaretleri, tarayıcıya kayıt)
 - [x] 5. Değer puanı, değer blokları ve anıt inşası (takma ad, tam kayıt, sıfırlama, harita yakınlaştırma)
 - [x] 6. Renklenme efekti, ses ve son ekran (renk dalgası, konfeti, tarayıcıda üretilen müzik ve sesler, öğretmen özeti)
-- [ ] 7. Öğrencilerle deneme oynanışı ve düzeltmeler
+- [ ] 7. Öğrencilerle deneme oynanışı ve düzeltmeler — hazırlık yapıldı (ulaşılabilirlik testi, konak camları, iPad paneli, oyun içi ses düğmesi, memnuniyet anketi); sınıfta deneme bekleniyor
+
+## Sınıfta deneme oynanışı için
+
+1. Oyunu kullanılacak bilgisayarda ve tablette baştan sona bir kez oynayın; sayfanın "sürüm" yazısını not edin.
+2. Her öğrenci kendi cihazında oynar; ilerleme o cihazın tarayıcısında saklanır. Yeni öğrenciden önce giriş kartındaki **Baştan Başla** ile kayıt silinir.
+3. Oyun bitince öğrenci son ekrandaki kısa anketi doldurur. Öğretmen **Öğretmen Özeti**'ni açıp yazdırır ya da **Veriyi İndir (CSV)** ile kaydeder; dosyada öğrenci adı yoktur.
+4. Gözlem için not alınacaklar: takılınan görev, anlaşılmayan metin, iPad'de çalışmayan düğme, oyunun süresi (hedef 30-40 dakika).
 
 ## Dosya yapısı
 

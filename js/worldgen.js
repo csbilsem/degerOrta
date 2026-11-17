@@ -263,8 +263,9 @@ export function koyuOlustur() {
           if (!kx && !kz) continue;
           let id = (kx && kz) || y === G + 5 ? B.KUTUK : B.DUVAR;
           const py = y === G + 2 || y === G + 3 || y === G + 7;
-          if (py && kz && !kx && (x - x0) % 4 === 2) id = B.HAVA;
-          if (py && kx && !kz && (z - z0) % 4 === 2) id = B.HAVA;
+          // Konağın pencereleri camlı: kapı kapalıyken içeri pencereden girilmesin
+          if (py && kz && !kx && (x - x0) % 4 === 2) id = B.CAM;
+          if (py && kx && !kz && (z - z0) % 4 === 2) id = B.CAM;
           w.koy(x, y, z, id);
         }
     // büyük giriş kapısı (kuzeye, meydana bakar)

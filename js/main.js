@@ -217,6 +217,12 @@ const gorevler = new Gorevler({
   kutla,
   panel: $('gorev-paneli'),
 });
+// Görev paneline dokununca / tıklayınca yalnızca yönerge kalacak şekilde küçülür
+$('gorev-paneli').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  $('gorev-paneli').classList.toggle('kucuk');
+});
 harita = new Harita($('harita'), dunya);
 harita.tabanCiz(hedefDoygunluk);
 function haritaGorunumu(degistir = true) {
@@ -303,7 +309,27 @@ function sesDugmeleri() {
   $('ses-efekt').textContent = `Sesler: ${ses.ayar.efekt ? 'Açık' : 'Kapalı'}`;
   $('ses-muzik').classList.toggle('kapali', !ses.ayar.muzik);
   $('ses-efekt').classList.toggle('kapali', !ses.ayar.efekt);
+  const sessiz = !ses.ayar.muzik && !ses.ayar.efekt;
+  $('ses-dugme').textContent = sessiz ? '🔇' : '🔊';
+  $('ses-dugme').classList.toggle('kapali', sessiz);
 }
+// Oyun içi düğme ve N tuşu: müziği ve sesleri birlikte açar / kapatır
+function sesiAcKapat() {
+  ses.baslat();
+  const acik = ses.ayar.muzik || ses.ayar.efekt;
+  if (acik) ses.oncekiAyar = { ...ses.ayar };
+  const geri = ses.oncekiAyar && (ses.oncekiAyar.muzik || ses.oncekiAyar.efekt) ? ses.oncekiAyar : { muzik: true, efekt: true };
+  ses.ayarla('muzik', acik ? false : geri.muzik);
+  ses.ayarla('efekt', acik ? false : geri.efekt);
+  sesDugmeleri();
+  mesajGoster(acik ? 'Ses kapatıldı.' : 'Ses açıldı.', 1500);
+  if (!acik) ses.cal('dogru');
+}
+$('ses-dugme').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  sesiAcKapat();
+});
 $('ses-muzik').addEventListener('click', () => {
   ses.baslat();
   ses.ayarla('muzik', !ses.ayar.muzik);
@@ -461,6 +487,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.code === 'KeyE' && !e.repeat) return konus();
   if (e.code === 'KeyM' && !e.repeat) return haritaGorunumu();
+  if (e.code === 'KeyN' && !e.repeat) return sesiAcKapat();
   if (e.code === 'KeyV' && !e.repeat) oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis;
   if (!e.repeat && /^Digit[1-9]$/.test(e.code)) {
     envanter.sec(Number(e.code.slice(5)) - 1);

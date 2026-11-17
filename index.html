@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Kalbin Kahramanları</title>
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
   <canvas id="oyun"></canvas>
@@ -30,6 +30,7 @@
       <div id="envanter"></div>
     </div>
     <div id="gorev-paneli"></div>
+    <button id="ses-dugme" title="Sesi aç / kapat (N)" aria-label="Sesi aç / kapat">🔊</button>
     <canvas id="harita" width="340" height="340"></canvas>
     <div id="harita-ipucu"></div>
   </div>
@@ -58,6 +59,7 @@
         <li><b>Zıpla:</b> zıpla</li>
         <li><b>Alttaki kutular:</b> blok seç</li>
         <li><b>Haritaya dokun:</b> yakınlaştır / büyüt</li>
+        <li><b>🔊:</b> sesi aç / kapat</li>
         <li><b>II:</b> duraklat</li>
       </ul>
       <ul class="tuslar klavye-yardim">
@@ -70,6 +72,7 @@
         <li><kbd>Sağ tık</kbd> blok yerleştir</li>
         <li><kbd>1</kbd>–<kbd>9</kbd> / tekerlek: blok seç</li>
         <li><kbd>M</kbd> haritayı yakınlaştır / büyüt</li>
+        <li><kbd>N</kbd> sesi aç / kapat</li>
         <li><kbd>V</kbd> kamerayı değiştir</li>
         <li><kbd>Esc</kbd> duraklat</li>
       </ul>
@@ -87,7 +90,7 @@
         <button id="sifirla" class="kucuk-dugme gizli">Baştan Başla</button>
       </div>
       <p id="hata" class="gizli"></p>
-      <p class="surum">sürüm 0.6.0</p>
+      <p class="surum">sürüm 0.7.0</p>
     </div>
   </div>
 
@@ -98,6 +101,10 @@
       <p>Değerler Anıtı'nı kurdun ve köyün renklerini geri getirdin. Bu değerleri kalbinde taşıdıkça renkler hiç solmayacak:</p>
       <div class="son-degerler"></div>
       <p class="son-sayilar"></p>
+      <div class="anket">
+        <p class="anket-baslik">Bize oyunu anlatır mısın? <small>(isteğe bağlı)</small></p>
+        <div class="anket-sorular"></div>
+      </div>
       <button id="son-devam" class="ana-dugme">Köyde Gezmeye Devam Et</button>
       <div class="kart-alt">
         <button id="son-ozet" class="kucuk-dugme">Öğretmen Özeti</button>
@@ -140,6 +147,6 @@
       });
     })();
   </script>
-  <script type="module" src="js/main.js?v=7" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
+  <script type="module" src="js/main.js?v=8" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
 </body>
 </html>

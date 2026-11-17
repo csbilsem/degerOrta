@@ -131,7 +131,7 @@ export const KARAKTERLER = [
   },
   {
     kimlik: 'elif', ad: 'Elif', x: 35.5, z: 66.5, bakis: 1.2,
-    gorunum: { tur: 'cocuk', ust: 0xe8548f, alt: 0x5a3d7a, sac: 0x4a2c1a, orgu: true },
+    gorunum: { tur: 'cocuk', ust: 0xe8548f, alt: 0x5a3d7a, sac: 0x4a2c1a, orgu: true, kiz: true },
     diyalog: basit('Biz burada yakalamaca oynuyoruz!', 'Deniz mi? O çok yavaş koşuyor, takıma almadık.'),
   },
   {
@@ -183,7 +183,7 @@ export const KARAKTERLER = [
   // ---------- Köyün çocukları (yol gösteren kısa sohbetler) ----------
   {
     kimlik: 'alya', ad: 'Alya', x: 69.5, z: 60.5, bakis: -2.2,
-    gorunum: { tur: 'cocuk', ust: 0xf07ab0, alt: 0x4a5a8a, sac: 0x3a2516, orgu: true },
+    gorunum: { tur: 'cocuk', ust: 0xf07ab0, alt: 0x4a5a8a, sac: 0x3a2516, orgu: true, kiz: true },
     diyalog: basit(
       'Merhaba! Ben Alya. Köyümüz eskiden rengârenkmiş.',
       'Dede ile konuştun mu? Ne yapacağını en iyi o anlatır.'
@@ -191,7 +191,7 @@ export const KARAKTERLER = [
   },
   {
     kimlik: 'beren', ad: 'Beren', x: 70.7, z: 61.8, bakis: -2.0,
-    gorunum: { tur: 'cocuk', ust: 0x8ed0c2, alt: 0x6b4a8a, sac: 0x1f1f1f, orgu: true },
+    gorunum: { tur: 'cocuk', ust: 0x8ed0c2, alt: 0x6b4a8a, sac: 0x1f1f1f, orgu: true, kiz: true },
     diyalog: basit(
       'Ben Beren! Yolunu kaybedersen haritaya bak; renkli noktalar görevlerin yerini gösterir.',
       'Haritayı büyütebildiğini biliyor muydun?'
@@ -199,7 +199,7 @@ export const KARAKTERLER = [
   },
   {
     kimlik: 'serra', ad: 'Serra', x: 93.5, z: 61.5, bakis: 0.4,
-    gorunum: { tur: 'cocuk', ust: 0xf7d038, alt: 0x3b6ea8, sac: 0x5a3a22 },
+    gorunum: { tur: 'cocuk', ust: 0xf7d038, alt: 0x3b6ea8, sac: 0x5a3a22, orgu: true, kiz: true },
     diyalog: basit(
       'Ben Serra. Annemle alışverişe geldik.',
       'Annem der ki: "İyi esnaf, terazisini müşterisinin gözü önünde tartar." Satıcıları iyi gözlemle!'
@@ -215,7 +215,7 @@ export const KARAKTERLER = [
   },
   {
     kimlik: 'zeynep', ad: 'Zeynep', x: 61.5, z: 47.5, zeminden: true, bakis: 2.6,
-    gorunum: { tur: 'cocuk', ust: 0xe02a2a, alt: 0x2c3e50, sac: 0x3a2516, orgu: true },
+    gorunum: { tur: 'cocuk', ust: 0xe02a2a, alt: 0x2c3e50, sac: 0x3a2516, orgu: true, kiz: true },
     diyalog: basit(
       'Ben Zeynep! Yamaçtaki altın bilgi bloklarını gördün mü?',
       'Hepsini dikkatle okursan tepedeki Sezgin Öğretmen\'in sorularını kolayca bilirsin.'

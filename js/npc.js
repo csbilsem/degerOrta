@@ -14,7 +14,7 @@ function kutu(grup, gx, gy, gz, renk, x, y, z) {
 // Küplerden yapılmış özgün köylü modeli. Yüz +z yönüne bakar; ayaklar y=0'dadır.
 function insanModeli(g) {
   const grup = new THREE.Group();
-  const kadin = g.tur === 'kadin';
+  const kadin = g.tur === 'kadin' || g.kiz; // kadınlar ve kız çocuklar etekli
   // bacaklar ya da uzun etek
   if (kadin) kutu(grup, 0.56, 0.7, 0.4, g.alt, 0, 0.35, 0);
   else {

@@ -37,6 +37,7 @@ export const B = {
   SU_KABI: 32,
   MAMA: 33,
   ANIT_TASI: 34,
+  CAM: 35,
 };
 
 // kati: oyuncu içinden geçemez. opak: arkasındaki yüzleri gizler.
@@ -85,6 +86,7 @@ BLOKLAR[B.MERMER].kirilmaz = 'Burası Anıt Alanı; mermeri kırılamaz. Anıtı
 
 // Görev blokları: yalnızca görevde işaretlenen yerlere konur, hep renklidir.
 BLOKLAR[B.KAPI] = T('Konak kapısı', 0x6b4423);
+BLOKLAR[B.CAM] = T('Pencere camı', 0xbfe3f0, true, false);
 BLOKLAR[B.SU_KABI] = T('Su kabı', 0x4fb6e8);
 BLOKLAR[B.MAMA] = T('Mama kabı', 0xd98b4a);
 BLOKLAR[B.ANIT_TASI] = T('Anıt taşı', 0xe9e4d8);

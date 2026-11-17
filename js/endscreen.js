@@ -65,7 +65,36 @@ export function ozetVerisi(gorevler) {
   };
 }
 
+// Oyun sonu memnuniyet anketi (tasarım belgesi, bölüm 7)
+export const ANKET = [
+  { kimlik: 'sevdi', soru: 'Oyunu ne kadar sevdin?', secenekler: ['😞', '😐', '🙂', '😄'], aciklama: ['Hiç', 'Biraz', 'Sevdim', 'Çok sevdim'] },
+  { kimlik: 'ogrendi', soru: 'Oyun, değerleri anlamana yardımcı oldu mu?', secenekler: ['😞', '😐', '🙂', '😄'], aciklama: ['Hayır', 'Biraz', 'Evet', 'Çok'] },
+  { kimlik: 'zorluk', soru: 'Görevler senin için nasıldı?', secenekler: ['Çok kolay', 'Kolay', 'Biraz zor', 'Çok zor'] },
+  { kimlik: 'bolge', soru: 'En çok hangi bölgeyi sevdin?', secenekler: ['Doğruluk Çarşısı', 'Merhamet Bahçesi', 'Adap Konağı', 'Vatan Tepesi'] },
+];
+const anketCevabi = (s, i) => (s.aciklama ? `${s.secenekler[i]} ${s.aciklama[i]}` : s.secenekler[i]);
+
+function anketCiz(el, gorevler) {
+  const cevap = gorevler.kayit.anket || {};
+  el.innerHTML = ANKET.map(
+    (s) => `<div class="anket-soru"><span>${s.soru}</span><div class="anket-secenekler">${s.secenekler
+      .map(
+        (m, i) =>
+          `<button class="anket-secenek${cevap[s.kimlik] === i ? ' secili' : ''}${s.aciklama ? ' emoji' : ''}" data-s="${s.kimlik}" data-i="${i}" title="${s.aciklama ? s.aciklama[i] : m}">${m}</button>`
+      )
+      .join('')}</div></div>`
+  ).join('');
+  el.onclick = (e) => {
+    const b = e.target.closest('.anket-secenek');
+    if (!b) return;
+    gorevler.kayit.anket = { ...(gorevler.kayit.anket || {}), [b.dataset.s]: Number(b.dataset.i) };
+    gorevler.kaydet();
+    anketCiz(el, gorevler);
+  };
+}
+
 export function sonEkraniDoldur(el, gorevler) {
+  anketCiz(el.querySelector('.anket-sorular'), gorevler);
   const o = ozetVerisi(gorevler);
   const ad = gorevler.kayit.ad;
   el.querySelector('.son-baslik').textContent = ad ? `Tebrikler ${ad}!` : 'Tebrikler!';
@@ -90,6 +119,10 @@ export function ozetiDoldur(el, gorevler) {
     h += `<tr><td><b>${b.deger}</b> <small>(${b.ad})</small></td><td>${b.soru}</td><td>${b.ilkDogru}</td><td>${b.yanlisDeneme}</td><td>${b.puan}</td></tr>`;
   }
   h += `<tr class="toplam"><td>Toplam</td><td>${o.soru}</td><td>${o.ilkDogru}</td><td>${o.bolgeler.reduce((t, b) => t + b.yanlisDeneme, 0)}</td><td>${o.bolgeler.reduce((t, b) => t + b.puan, 0)}</td></tr></tbody></table>`;
+  const anket = gorevler.kayit.anket || {};
+  h += `<h3>Memnuniyet anketi</h3><table class="ozet-tablo"><tbody>${ANKET.map(
+    (s) => `<tr><td>${s.soru}</td><td>${anket[s.kimlik] === undefined ? '<i>cevaplanmadı</i>' : anketCevabi(s, anket[s.kimlik])}</td></tr>`
+  ).join('')}</tbody></table>`;
   if (!o.liste.length) h += '<p>Henüz kayıtlı bir karar yok.</p>';
   else {
     h += `<h3>Kararların ayrıntısı</h3><table class="ozet-tablo ayrinti"><thead><tr><th>Görev</th><th>Soru</th><th>İlk seçim</th><th>İlk denemede</th><th>Deneme</th></tr></thead><tbody>`;
@@ -111,6 +144,9 @@ export function csvUret(gorevler) {
   for (const s of o.liste) {
     satirlar.push([h(BOLGE_ADLARI[s.bolge]), h(s.gorev), h(s.soru), h(s.ilkSecim), s.ilkDogru ? 1 : 0, s.deneme].join(';'));
   }
-  satirlar.push('', ['sure_saniye', Math.round(o.sure)].join(';'), ['tamamlanan_gorev', o.gorev].join(';'), ['anit', o.anit ? 1 : 0].join(';'));
+  const anket = gorevler.kayit.anket || {};
+  satirlar.push('');
+  for (const s of ANKET) satirlar.push(['anket_' + s.kimlik, anket[s.kimlik] === undefined ? '' : h(s.aciklama ? s.aciklama[anket[s.kimlik]] : s.secenekler[anket[s.kimlik]])].join(';'));
+  satirlar.push(['sure_saniye', Math.round(o.sure)].join(';'), ['tamamlanan_gorev', o.gorev].join(';'), ['anit', o.anit ? 1 : 0].join(';'));
   return '﻿' + satirlar.join('\r\n');
 }

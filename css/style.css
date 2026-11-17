@@ -425,3 +425,39 @@ body.dokunmatik #harita-ipucu { top: 216px; width: 146px; }
   #ozet { position: static; display: block !important; padding: 0; background: none; }
   .ozet-kart { max-height: none; overflow: visible; box-shadow: none; width: 100%; }
 }
+
+/* ---------- Oyun içi ses düğmesi ---------- */
+#ses-dugme {
+  position: absolute; right: 196px; top: 12px;
+  width: 48px; height: 44px;
+  border: 3px solid rgba(255, 255, 255, 0.7); border-radius: 12px;
+  background: rgba(30, 36, 46, 0.7);
+  font-size: 20px; line-height: 1; cursor: pointer;
+  pointer-events: auto; touch-action: none;
+}
+#ses-dugme.kapali { opacity: 0.6; }
+body.dokunmatik #ses-dugme { right: 164px; top: 14px; }
+#hud.konusuyor #ses-dugme { display: none; }
+
+/* ---------- Memnuniyet anketi ---------- */
+.anket { margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; background: #fff; text-align: left; }
+.anket-baslik { margin: 0 0 6px !important; font-weight: bold; color: #2f8f83; }
+.anket-baslik small { font-weight: normal; color: #7a6a55; }
+.anket-soru { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 5px 0; border-top: 1px solid #eee5d4; font-size: 14px; }
+.anket-secenekler { display: flex; flex-wrap: wrap; gap: 5px; }
+.anket-secenek {
+  padding: 4px 10px; border: 2px solid #d8d2c4; border-radius: 10px;
+  background: #fbf7ee; color: #2b2f36; font: 13px inherit; cursor: pointer;
+}
+.anket-secenek.emoji { font-size: 20px; padding: 2px 8px; }
+.anket-secenek.secili { border-color: #2f8f83; background: #e6f3f0; font-weight: bold; }
+
+/* ---------- Görev paneli: dokunmatikte kısa, dokununca küçülür ---------- */
+#gorev-paneli { pointer-events: auto; cursor: pointer; }
+#gorev-paneli .g-baslik::after { content: ' ▾'; }
+#gorev-paneli.kucuk .g-baslik::after { content: ' ▸'; }
+#gorev-paneli.kucuk .g-satir { display: none; }
+body.dokunmatik #gorev-paneli { width: 250px; max-height: calc(100vh - 360px); }
+body.dokunmatik #gorev-paneli .g-alt,
+body.dokunmatik #gorev-paneli .g-cubuk { display: none; }
+body.dokunmatik #gorev-paneli .g-satir { padding: 3px 0; }
