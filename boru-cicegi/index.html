@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+</head>
+<body>
+<title>Boru Çiçeği</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;600;700&display=swap">
+<style>
+/* Layout: tek ekran — üstte durum çubuğu, ortada oyun tuvali, altında dokunmatik kontroller; diyaloglar tuvalin üstünde */
+:root{
+  color-scheme: dark;
+  --bg:#0d0f0c;          /* gece bahçesi */
+  --panel:#171a15;
+  --line:#2c3128;
+  --ink:#e6e2d3;          /* eski kâğıt */
+  --muted:#9a9b8b;
+  --bloom:#efe9d2;        /* tatula çiçeği beyazı */
+  --pollen:#d9c25a;       /* polen sarısı */
+  --danger:#c4553f;
+  --calm:#7fae8a;
+  --f-display:"Special Elite","Courier New",monospace;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:400;font-size:1.6rem;margin:0;letter-spacing:.04em;color:var(--bloom)}
+.tools{display:flex;gap:8px}
+button{font:600 13px var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--pollen)}
+button:focus-visible{outline:2px solid var(--pollen);outline-offset:2px}
+.hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0}
+.stat small{display:block;color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.stat b{font-variant-numeric:tabular-nums;font-size:15px}
+.bar{height:5px;background:#000;border-radius:3px;margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;transition:width .3s}
+#thirstBar{background:#5c8db8} #mindBar{background:var(--pollen)}
+.goal{font-family:var(--f-display);color:var(--muted);min-height:1.4em}
+.stage{position:relative;width:100%;aspect-ratio:3/2;max-width:100%;background:#000;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+.prompt{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:4px 10px;border-radius:4px;font-size:13px;pointer-events:none}
+.toast{position:absolute;right:10px;top:10px;max-width:60%;background:rgba(23,26,21,.92);border-left:3px solid var(--pollen);padding:6px 10px;font-size:13px;pointer-events:none;transition:opacity .4s}
+.dialog{position:absolute;left:3%;right:3%;bottom:3%;background:rgba(14,16,12,.95);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;max-height:70%;overflow:auto}
+.dialog .who{font-family:var(--f-display);color:var(--pollen);font-size:13px;letter-spacing:.06em}
+.dialog p{margin:0;line-height:1.55;white-space:pre-line;font-size:15px}
+.dialog .note{font-family:var(--f-display);background:#d8d1b8;color:#2a241a;padding:10px 12px;border-radius:2px;font-size:15px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices button{background:#22261f}
+.overlay{position:absolute;inset:0;background:rgba(5,6,5,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;overflow:auto}
+.overlay h2{font-family:var(--f-display);font-weight:400;font-size:2.2rem;margin:0;color:var(--bloom);text-wrap:balance}
+.overlay p{max-width:58ch;line-height:1.6;margin:0;color:var(--ink)}
+.overlay .keys{color:var(--muted);font-size:13px}
+.overlay button{font-size:15px;padding:10px 22px;border-color:var(--pollen)}
+.journal{position:absolute;inset:0;background:#d8d1b8;color:#2a241a;padding:18px 22px;overflow:auto;font-family:var(--f-display)}
+.journal h3{margin:12px 0 6px;font-weight:400;font-size:1.1rem;border-bottom:1px dashed #8a7f62}
+.journal ul{margin:0;padding-left:18px;line-height:1.5}
+.journal li{margin-bottom:6px}
+.journal .hallu{color:#7a2e22}
+.journal .hallu.known{text-decoration:line-through;color:#8a7f62}
+.journal .done{color:#2f5e3a}
+.journal .close{position:sticky;top:0;float:right;background:#2a241a;color:#d8d1b8;border:0}
+.pad{display:none;justify-content:space-between;align-items:center;gap:12px;user-select:none;-webkit-user-select:none;touch-action:none}
+.dpad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px}
+.dpad button,.acts button{font-size:18px;padding:0;touch-action:none}
+.dpad .u{grid-column:2}.dpad .l{grid-column:1;grid-row:2}.dpad .d{grid-column:2;grid-row:2}.dpad .r{grid-column:3;grid-row:2}
+.acts{display:flex;gap:10px}.acts button{width:64px;height:64px;border-radius:50%}
+@media (pointer:coarse){.pad{display:flex}}
+@media (prefers-reduced-motion:reduce){.bar i,.toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Boru Çiçeği</h1>
+    <div class="tools">
+      <button id="btnJournal" type="button">Defter (J)</button>
+      <button id="btnSound" type="button">Ses: açık</button>
+    </div>
+  </header>
+
+  <div class="hud">
+    <div class="stat"><small>Gün · Saat</small><b id="hTime">1 · 08:00</b></div>
+    <div class="stat"><small>Para</small><b id="hMoney">900 TL</b></div>
+    <div class="stat"><small>Susuzluk</small><b id="hThirst">—</b><div class="bar"><i id="thirstBar"></i></div></div>
+    <div class="stat"><small>Zihin</small><b id="hMind">Berrak</b><div class="bar"><i id="mindBar"></i></div></div>
+    <div class="stat"><small>Eşyalar</small><b id="hItems" style="font-size:12px;font-weight:600">—</b></div>
+  </div>
+  <div class="goal" id="goal"></div>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" width="960" height="640"></canvas>
+    <div class="prompt" id="prompt" hidden></div>
+    <div class="toast" id="toast" style="opacity:0"></div>
+    <div class="dialog" id="dialog" hidden>
+      <div class="who" id="dWho"></div>
+      <p id="dText"></p>
+      <div class="choices" id="dChoices"></div>
+    </div>
+    <div class="journal" id="journal" hidden></div>
+    <div class="overlay" id="overlay">
+      <h2>Boru Çiçeği</h2>
+      <p>Fabrikada vardiyalı çalışıyorsun, maaş ancak kiraya yetiyor. Kasabanın ucunda, Değirmen Sokak 7 numaradaki ev piyasanın yarı fiyatına satılık. Emlakçı yüzüne bakmadan “Geçmişte bazı… olaylar oldu” diyor ve fazlasını anlatmıyor.</p>
+      <p>Birikiminin neredeyse tamamını verip evi alıyorsun. Cebinde 900 TL kaldı. Taşınma günü yorgunluktan mutfaktaki musluktan kana kana su içiyorsun.</p>
+      <p class="keys">Yürü: WASD / ok tuşları · Etkileşim: E veya Boşluk · Defter: J · Seçim: 1–4</p>
+      <button id="btnStart" type="button">Eve gir</button>
+    </div>
+  </div>
+
+  <div class="pad" id="pad">
+    <div class="dpad">
+      <button class="u" data-k="up" type="button" aria-label="Yukarı">▲</button>
+      <button class="l" data-k="left" type="button" aria-label="Sol">◀</button>
+      <button class="d" data-k="down" type="button" aria-label="Aşağı">▼</button>
+      <button class="r" data-k="right" type="button" aria-label="Sağ">▶</button>
+    </div>
+    <div class="acts">
+      <button id="padJ" type="button" aria-label="Defter">J</button>
+      <button id="padE" type="button" aria-label="Etkileşim">E</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ======================= HARİTA =======================
+const T = 32, COLS = 30, ROWS = 20, W = COLS*T, H = ROWS*T;
+const MAP = [
+"ffffffffffffffffffffffffffffff",
+"f###################gggggggggf",
+"f#.....#......#,,,,#gggggggggf",
+"f#.....#......#,,,,#gggggggggf",
+"f#.....d......d,,,,#gggggggggf",
+"f#.....#......#,,,,#gggggggggf",
+"f###d###......######gggggggggf",
+"f#.....#......#,,,,#gggggggggf",
+"f#.....d......d,,,,dgggggggggf",
+"f#.....#......#,,,,#gggggggggf",
+"f#########d#########gggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"fgggggggggpggggggggggggggggggf",
+"ffffffffffGfffffffffffffffffff"];
+const SOLID = new Set(["#","f","G"]);
+const tileAt = (cx,cy) => (cy<0||cy>=ROWS||cx<0||cx>=COLS) ? "#" : MAP[cy][cx];
+const seed = Array.from({length:COLS*ROWS},(_,i)=>{let x=Math.sin(i*91.7)*43758.5;return x-Math.floor(x);});
+
+// ======================= DURUM =======================
+function freshState(){
+  return {
+    day:1, min:8*60, money:900, thirst:30, toxin:12, bottles:0,
+    px:11*T+6, py:8*T+6, dir:"down",
+    items:{}, clues:{}, flags:{}, ded:{},
+    tankClean:false, treeCut:false, covered:false, over:false
+  };
+}
+let S = freshState();
+
+// ======================= METİNLER =======================
+const CLUES = {
+  contract:{t:"Satış sözleşmesi", d:"Ev şebeke suyuna bağlı değil, bahçedeki depodan besleniyor. Önceki sahipler: Aksoy ailesi. Ev 'acil' satılmış."},
+  diary1:{t:"Günlük, sayfa 1", d:"Bahçedeki ağaç beyaz, boru gibi çiçekler açmış. Akşamları ağır, tatlı bir koku."},
+  diary2:{t:"Günlük, sayfa 2", d:"Musluk suyu acımsı. Ağız kuruluğu geçmiyor. Geceleri koridorda biri yürüyor."},
+  diary3:{t:"Günlük, sayfa 3", d:"Elif olmayan biriyle konuşuyor. Ben de gördüm. Su almaya paramız yok."},
+  news:{t:"Gazete kupürü", d:"Aksoy ailesi 'hayalet gördük' diyerek evi terk etti. İkisi hastanede gözlem altında; doktorlar 'toplu panik' demiş."},
+  news2:{t:"Gazetenin devamı", d:"Elif Aksoy (9) tedaviden sonra taburcu edildi. Yani Elif yaşıyor."},
+  bill:{t:"Su faturası", d:"Şebeke tüketimi: 0 m³. Evin bütün suyu bahçedeki depodan geliyor."},
+  mirror:{t:"Aynadaki yüz", d:"Gözbebeklerim kocaman, ışıkta küçülmüyor. Yüzüm kızarık, dudaklarım kupkuru."},
+  webSymptoms:{t:"İnternet: belirtiler", d:"Ağız kuruluğu + büyük gözbebeği + kızarıklık + halüsinasyon: antikolinerjik zehirlenme. Kaynak olabilecekler: bazı ilaçlar, tatula gibi bitkiler."},
+  treeSeen:{t:"Bahçedeki ağaç", d:"Beyaz, huni biçimli çiçekler, dikenli tohum kapsülleri. Sarı polenleri rüzgârla depoya doğru savruluyor."},
+  book:{t:"Bitki ansiklopedisi", d:"Tatula (Datura stramonium), halk arasında boru çiçeği. Bütün kısımları atropin ve skopolamin içerir: ağız kuruluğu, büyük gözbebeği, gerçek sanılan halüsinasyonlar."},
+  webFlower:{t:"İnternet: beyaz huni çiçek", d:"Fotoğraf eşleşmesi: Tatula (Datura stramonium). 'Son derece zehirli.'"},
+  neighborFlower:{t:"Nermin Teyze'nin sözü", d:"'O şeytan elmasıdır. Köyde hayvanlar bile yaklaşmazdı.'"},
+  tankOutside:{t:"Su deposu (dışı)", d:"Kapakta bir çatlak var, üstü sarımsı tozla kaplı."},
+  tankInside:{t:"Su deposu (içi)", d:"Suyun yüzeyinde ince sarı bir tabaka var, çürümüş beyaz çiçekler yüzüyor."},
+  girl:{t:"Küçük kız", d:"Yatak odasında bir kız gördüm. Adının Elif olduğunu söyledi.", hallu:true},
+  writing:{t:"Duvardaki yazı", d:"Salonun duvarında koca harflerle: BU EV SENİ İSTİYOR.", hallu:true},
+  shadow:{t:"Gölgeler", d:"Köşelerde insan biçiminde gölgeler dolaşıyor.", hallu:true},
+  medium:{t:"Medyum", d:"600 TL ödedim. Tütsü yaktı, dua okudu. Hiçbir şey değişmedi."}
+};
+const DEDS = {
+  poison:{t:"Gördüklerim gerçek değil: zehirleniyorum.", need:()=>S.clues.mirror && (S.clues.diary2||S.clues.webSymptoms)},
+  plant:{t:"Bahçedeki bitki tatula (boru çiçeği).", need:()=>S.items.flower && (S.clues.book||S.clues.webFlower||S.clues.neighborFlower)},
+  source:{t:"Zehir su deposundan geliyor; polen suya karışıyor.", need:()=>S.clues.tankInside && (S.clues.bill||S.clues.contract||S.clues.diary2)}
+};
+const DED_TEXT = {
+  poison:"Aynadaki o gözler… günlükteki ağız kuruluğu… Bu bir lanet değil. Vücuduma bir şey giriyor.",
+  plant:"Beyaz boru çiçekleri. Tatula. Tamamı zehirli, halüsinasyon yapıyor.",
+  source:"Bütün suyum o depodan geliyor ve ağacın poleni kapaktaki çatlaktan içeri yağıyor. Her yudumda biraz daha."
+};
+const allDed = () => S.ded.poison && S.ded.plant && S.ded.source;
+const waterSafe = () => S.tankClean && (S.treeCut || S.covered);
+
+// ======================= NESNELER =======================
+const OBJ = [
+  {id:"bed",x:2,y:2,w:2,h:1,solid:1,label:"Yatak",kind:"bed"},
+  {id:"nightstand",x:6,y:2,w:1,h:1,solid:1,label:"Komodin",kind:"crate"},
+  {id:"shelf",x:8,y:2,w:3,h:1,solid:1,label:"Kitaplık",kind:"shelf"},
+  {id:"phone",x:13,y:2,w:1,h:1,solid:1,label:"Telefon",kind:"phone"},
+  {id:"laptop",x:10,y:5,w:2,h:1,solid:1,label:"Dizüstü bilgisayar",kind:"table"},
+  {id:"sofa",x:8,y:7,w:1,h:2,solid:1,label:null,kind:"sofa"},
+  {id:"box",x:12,y:8,w:1,h:1,solid:1,label:"Taşınma kolisi",kind:"box"},
+  {id:"sink",x:16,y:2,w:1,h:1,solid:1,label:"Lavabo ve ayna",kind:"mirror"},
+  {id:"cabinet",x:18,y:2,w:1,h:1,solid:1,label:"Banyo dolabı",kind:"crate"},
+  {id:"tub",x:17,y:5,w:2,h:1,solid:1,label:null,kind:"tub"},
+  {id:"tap",x:15,y:7,w:1,h:1,solid:1,label:"Musluk",kind:"tap"},
+  {id:"counter",x:16,y:7,w:1,h:1,solid:1,label:null,kind:"counter"},
+  {id:"fridge",x:18,y:7,w:1,h:1,solid:1,label:"Buzdolabı",kind:"fridge"},
+  {id:"ladder",x:2,y:7,w:1,h:1,solid:1,label:"Merdiven",kind:"ladder",cond:()=>!S.items.ladder},
+  {id:"chest",x:2,y:9,w:2,h:1,solid:1,label:"Eski sandık",kind:"chest"},
+  {id:"axe",x:6,y:9,w:1,h:1,solid:0,label:"Balta",kind:"axe",cond:()=>!S.items.axe},
+  {id:"tank",x:23,y:5,w:2,h:2,solid:1,label:"Su deposu",kind:"tank"},
+  {id:"tree",x:25,y:2,w:2,h:2,solid:1,label:"Bahçedeki ağaç",kind:"tree",cond:()=>!S.treeCut},
+  {id:"stump",x:25,y:2,w:2,h:2,solid:0,label:null,kind:"stump",cond:()=>S.treeCut},
+  {id:"mailbox",x:12,y:18,w:1,h:1,solid:1,label:"Posta kutusu",kind:"mailbox"},
+  {id:"gate",x:10,y:19,w:1,h:1,solid:1,label:"Bahçe kapısı",kind:"none"},
+  {id:"neighbor",x:15,y:18,w:1,h:1,solid:1,label:"Nermin Teyze",kind:"npc",cond:()=>S.min>=9*60&&S.min<19*60},
+  // halüsinasyonlar
+  {id:"girl",x:4,y:4,w:1,h:1,solid:0,label:"Küçük kız",kind:"girl",hallu:1,cond:()=>S.toxin>=35},
+  {id:"writing",x:11,y:1,w:2,h:1,solid:1,label:"Duvardaki yazı",kind:"writing",hallu:1,cond:()=>S.toxin>=55}
+];
+const visible = o => !o.cond || o.cond();
+
+// ======================= DOM =======================
+const $ = id => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+const world = document.createElement("canvas"); world.width=W; world.height=H;
+const wctx = world.getContext("2d");
+const keys = {};
+let paused = true, dlgQueue = [], dlgOpen = false, journalOpen = false;
+
+// ======================= SES =======================
+let AC=null, droneGain=null, soundOn=true, nextWhisper=0, nextBeat=0;
+function initAudio(){
+  try{
+    AC = new (window.AudioContext||window.webkitAudioContext)();
+    droneGain = AC.createGain(); droneGain.gain.value = 0; droneGain.connect(AC.destination);
+    [55,58.3,110.6].forEach((f,i)=>{const o=AC.createOscillator();o.type=i===2?"triangle":"sine";o.frequency.value=f;const g=AC.createGain();g.gain.value=i===2?.25:.5;o.connect(g);g.connect(droneGain);o.start();});
+  }catch(e){AC=null;}
+}
+function noiseBurst(dur, freq, vol){
+  if(!AC||!soundOn) return;
+  const len = Math.floor(AC.sampleRate*dur), buf = AC.createBuffer(1,len,AC.sampleRate), d = buf.getChannelData(0);
+  for(let i=0;i<len;i++){ d[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/len); }
+  const src=AC.createBufferSource(); src.buffer=buf;
+  const bp=AC.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=freq; bp.Q.value=6;
+  const g=AC.createGain(); g.gain.value=vol; const pan = AC.createStereoPanner ? AC.createStereoPanner() : null;
+  src.connect(bp); bp.connect(g);
+  if(pan){pan.pan.value=Math.random()*2-1; g.connect(pan); pan.connect(AC.destination);} else g.connect(AC.destination);
+  src.start();
+}
+function thump(){
+  if(!AC||!soundOn) return;
+  const o=AC.createOscillator(), g=AC.createGain(); o.frequency.value=48;
+  g.gain.setValueAtTime(.35,AC.currentTime); g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.25);
+  o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+.3);
+}
+function audioTick(now){
+  if(!AC) return;
+  const tx = S.toxin/100;
+  droneGain.gain.setTargetAtTime(soundOn ? Math.max(0,tx-.15)*.12 : 0, AC.currentTime, .5);
+  if(S.toxin>25 && now>nextWhisper){ noiseBurst(.5+Math.random()*.8, 900+Math.random()*1800, .05+tx*.12); nextWhisper = now + (9000-tx*7000)*(0.5+Math.random()); }
+  if(S.toxin>70 && now>nextBeat){ thump(); setTimeout(thump,180); nextBeat = now + 1400 - (tx-.7)*1500; }
+}
+
+// ======================= DİYALOG =======================
+function say(text, opts={}){ dlgQueue.push({text, ...opts}); if(!dlgOpen) nextDlg(); }
+function nextDlg(){
+  const d = dlgQueue.shift();
+  if(!d){ dlgOpen=false; $("dialog").hidden=true; return; }
+  dlgOpen=true; $("dialog").hidden=false;
+  $("dWho").textContent = d.who || "";
+  const p=$("dText"); p.className = d.note ? "note" : ""; p.textContent = d.text;
+  const box=$("dChoices"); box.innerHTML="";
+  const choices = (d.choices||[{t:"Devam"}]).filter(c=>!c.if || c.if());
+  choices.forEach((c,i)=>{
+    const b=document.createElement("button"); b.type="button";
+    b.textContent = (choices.length>1? (i+1)+". " : "") + c.t;
+    b.onclick=()=>{ nextDlg(); if(c.fn) c.fn(); };
+    box.appendChild(b);
+  });
+  box.firstChild && box.firstChild.focus({preventScroll:true});
+}
+function chooseKey(n){ const b=$("dChoices").children[n]; if(b) b.click(); }
+let toastT=0;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>t.style.opacity=0,3200); }
+
+function addClue(id){
+  if(S.clues[id]) return;
+  S.clues[id]=true; toast("Deftere eklendi: "+CLUES[id].t);
+  checkDeductions();
+}
+function checkDeductions(){
+  for(const k in DEDS){
+    if(!S.ded[k] && DEDS[k].need()){
+      S.ded[k]=true;
+      say(DED_TEXT[k], {who:"ÇIKARIM · "+DEDS[k].t});
+      if(allDed()) say("Artık ne olduğunu biliyorum. Depoyu temizlemem ve polenin içeri girmesini durdurmam lazım: ya ağacı keserim ya da depoyu sıkıca örterim. O zamana kadar musluktan içmemeliyim.", {who:"PLAN"});
+    }
+  }
+}
+
+// ======================= ZAMAN =======================
+const hhmm = m => { m = ((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(Math.floor(m%60)).padStart(2,"0"); };
+function addMin(m){
+  S.min += m;
+  S.thirst = Math.min(100, S.thirst + m/60*6);
+  S.toxin = Math.max(0, S.toxin - m/60*0.6);
+  if(S.day===3 && !S.flags.loan && S.min>=12*60){ S.flags.loan=true; S.money-=350; toast("Kredi taksiti hesabından çekildi: −350 TL"); }
+}
+function drink(fromTap){
+  if(fromTap){
+    const dose = waterSafe() ? 0 : 12 + 3*S.day;
+    S.toxin += dose; S.thirst = Math.max(0,S.thirst-55); addMin(5);
+    return dose;
+  }
+  S.bottles--; S.thirst = Math.max(0,S.thirst-55); addMin(5); return 0;
+}
+function sleep(forced){
+  const tox = S.toxin;
+  S.day++; S.min = 8*60; S.thirst = Math.min(100,S.thirst+20); S.toxin = Math.max(0,S.toxin-6);
+  if(S.tankClean && !(S.treeCut||S.covered)){ S.tankClean=false; S.flags.repollen=true; }
+  if(S.day>=8){ return ending("escape"); }
+  let txt = forced ? "Bir yerde yere yığıldın. Gözlerini açtığında sabah olmuş.\n\n" : "";
+  if(tox>60) txt += "Rüyanda bahçedeki ağaç pencereye kadar uzandı. Beyaz çiçekleri ağız gibi açılıp kapanıyordu. Ter içinde uyandın.";
+  else if(tox>35) txt += "Gece boyunca koridordan ayak sesleri geldi. Kalkıp bakmaya cesaret edemedin.";
+  else txt += "Deliksiz uyudun. Pencereden giren ışık her şeyi daha az korkutucu gösteriyor.";
+  say(txt, {who:"GÜN "+S.day});
+  if(S.flags.repollen){ S.flags.repollen=false; say("Depo temizdi ama kapak hâlâ açık. Gece boyunca polen yine içeri dolmuş olmalı.", {who:"DÜŞÜNCE"}); }
+}
+
+// ======================= ETKİLEŞİMLER =======================
+const ACT = {
+  bed(){ say(S.min<20*60 ? "Henüz erken ama çok yorgunsun." : "Uyku vakti.", {choices:[{t:"Uyu (sabaha kadar)",fn:()=>sleep(false)},{t:"Vazgeç"}]}); },
+  nightstand(){
+    if(!S.clues.diary1){ say("12 Haziran. Taşındık! Bahçedeki ağaç beyaz, boru gibi çiçekler açmış. Akşamları ağır, tatlı bir koku geliyor. Elif çiçeklere bayılıyor. — N. Aksoy",{note:1,who:"ÇEKMECEDE BİR GÜNLÜK SAYFASI"}); addClue("diary1"); addMin(10); }
+    else say("Çekmece boş. İçinde kurumuş bir beyaz çiçek yaprağı var.");
+  },
+  shelf(){
+    if(S.items.flower && !S.clues.book){ say("Önceki sahiplerden kalan eski bir bitki ansiklopedisi. Çiçek örneğini sayfalarla karşılaştırıyorsun…\n\nTATULA (Datura stramonium), halk arasında boru çiçeği, şeytan elması. Huni biçimli beyaz çiçekler, dikenli tohum kapsülleri. Bitkinin bütün kısımları atropin ve skopolamin içerir. Belirtiler: ağız kuruluğu, büyümüş gözbebekleri, kızarıklık, gerçek sanılan halüsinasyonlar.\n\nKenara kurşun kalemle yazılmış: “Kemik gibi kuru, pancar gibi kırmızı, yarasa gibi kör, deli gibi.”",{who:"KİTAPLIK"}); addClue("book"); addMin(25); }
+    else if(S.clues.book) say("Ansiklopedi tatula sayfasında açık duruyor.");
+    else say("Tozlu kitaplar: yemek tarifleri, bir atlas, kalın bir bitki ansiklopedisi. Elinde bir örnek olsa karşılaştırabilirdin.");
+  },
+  phone(){
+    say("Eski bir sabit telefon. Yanında bir el ilanı: “MEDYUM SEMA — Evinizdeki kötü ruhları kovarım. 600 TL.”",{who:"TELEFON",choices:[
+      {t:"Medyumu ara (600 TL)", if:()=>!S.clues.medium, fn:()=>{ if(S.money<600) return say("Bu kadar paran yok."); S.money-=600; addMin(120); say("Medyum geldi. Tütsü yaktı, odaların köşelerine tuz döktü, dualar okudu. Parayı alıp gitti.\n\nAkşam gölgeler yine köşedeydi.",{who:"MEDYUM"}); addClue("medium"); }},
+      {t:"Kapat"}]});
+  },
+  laptop(){
+    say("Kasabanın yavaş interneti. Ne aratacaksın?",{who:"DİZÜSTÜ BİLGİSAYAR",choices:[
+      {t:"Evin adresini ara", fn:()=>{ addMin(20); if(!S.clues.news){ say("YEREL HABER — Değirmen Sokak 7 numarada oturan Aksoy ailesi, evde 'hayaletler' gördüklerini söyleyerek evi terk etti. Ailenin iki üyesi hastanede gözlem altına alındı. Doktorlar olayı 'toplu panik' olarak değerlendirdi.",{note:1}); addClue("news"); } else if(!S.clues.news2){ say("Takip haberi: Elif Aksoy (9) tedaviden sonra taburcu edildi. Doktorlar zehirlenme şüphesini araştırıyor ama kaynak bulunamamış.",{note:1}); addClue("news2"); } else say("Yeni bir şey çıkmadı."); }},
+      {t:"Belirtilerini ara", if:()=>S.clues.mirror, fn:()=>{ addMin(20); say("Ağız kuruluğu, büyük gözbebekleri, kızarıklık, halüsinasyon… Sonuçların hepsi aynı şeyi söylüyor: ANTİKOLİNERJİK ZEHİRLENME. Kaynak olabilecekler: bazı ilaçlar ve tatula gibi bitkiler.",{note:1}); addClue("webSymptoms"); }},
+      {t:"“Beyaz huni çiçek” ara", if:()=>S.clues.treeSeen, fn:()=>{ addMin(20); if(S.items.flower){ say("Çiçek örneğinin fotoğrafını yüklüyorsun. Eşleşme: TATULA (Datura stramonium). Uyarı: Son derece zehirli. Polen ve tohumları bile tehlikeli.",{note:1}); addClue("webFlower"); } else say("Yüzlerce benzer çiçek çıktı. Elinde bir örnek olsa karşılaştırabilirdin."); }},
+      {t:"Kapat"}]});
+  },
+  box(){
+    if(!S.clues.contract){ say("SATIŞ SÖZLEŞMESİ — Değirmen Sokak No:7. Önceki malik: Nihat Aksoy. Ek not: Mülk şehir şebekesine bağlı değildir. Kullanım suyu bahçedeki depodan sağlanır.\n\nKenarda emlakçının el yazısı: 'Acil satış.'",{note:1,who:"KOLİDE"}); addClue("contract"); addMin(10); }
+    else say("Koli. Tabaklar, birkaç kıyafet. Hayatının hepsi üç koliye sığmış.");
+  },
+  sink(){
+    if(S.toxin>=30 && !S.clues.mirror){ say("Aynaya bakıyorsun. Gözbebeklerin kocaman, karanlık. Işığı yaktığında bile küçülmüyorlar. Yüzün kızarık, dudakların çatlamış. Ağzının içi zımpara gibi.",{who:"AYNA"}); addClue("mirror"); addMin(5); }
+    else if(S.clues.mirror) say(S.toxin>=30 ? "Gözbebeklerin hâlâ kocaman." : "Gözbebeklerin normale dönmüş. Yüzündeki kızarıklık geçmiş.",{who:"AYNA"});
+    else say("Yorgun bir yüz. Bir şey göremiyorsun.",{who:"AYNA"});
+  },
+  cabinet(){
+    if(!S.clues.diary3){ say("2 Temmuz. Elif odasında olmayan biriyle konuşuyor. Dün gece ben de gördüm, kapının ardında duruyordu. Herkes evin lanetli olduğunu söylüyor. Bir haftadır kasabadan su alacak paramız yok. Gitmemiz lazım.",{note:1,who:"İLAÇLARIN ARKASINDA BİR GÜNLÜK SAYFASI"}); addClue("diary3"); addMin(10); }
+    else say("Boş ilaç kutuları.");
+  },
+  tap(){
+    const warn = allDed() && !waterSafe();
+    say(warn ? "Bu su zehirli. Biliyorsun." : (waterSafe() ? "Depo temiz. Su artık güvenli." : "Mutfak musluğu. Su biraz bulanık."),{who:"MUSLUK",choices:[
+      {t:"Musluktan iç", fn:()=>{ const d=drink(true); if(d>0 && S.clues.diary2) toast("Acımsı bir tat…"); }},
+      {t:"Vazgeç"}]});
+  },
+  fridge(){
+    if(S.bottles>0) say("Buzdolabında "+S.bottles+" şişe su var.",{choices:[{t:"Şişe sudan iç",fn:()=>drink(false)},{t:"Kapat"}]});
+    else say("Buzdolabı neredeyse boş. Hiç şişe su yok. Marketten alabilirsin (bahçe kapısı).");
+  },
+  ladder(){ S.items.ladder=true; toast("Merdiveni aldın"); addMin(5); },
+  axe(){ S.items.axe=true; toast("Baltayı aldın"); addMin(5); },
+  chest(){
+    if(!S.clues.diary2){ say("Sandıkta eski bir gazete ve bir günlük sayfası var.\n\n20 Haziran. Musluk suyu acımsı, tadı değişti. Ağzım sürekli kuru, ne kadar içsem geçmiyor. Geceleri koridorda biri yürüyor. Nihat duymadığını söylüyor.",{note:1,who:"ESKİ SANDIK"}); addClue("diary2"); addMin(15);
+      if(!S.clues.news){ say("Gazete kupürü: Aksoy ailesi 'hayalet gördük' diyerek evi terk etti. İkisi hastanede gözlem altında.",{note:1}); addClue("news"); } }
+    else say("Sandıkta eski çocuk çizimleri var. Birinde bir ev, yanında kocaman beyaz çiçekli bir ağaç.");
+  },
+  tank(){
+    if(!S.items.ladder){ say("Beton bir kaidenin üstünde paslı metal bir depo. Borusu mutfağa gidiyor. Kapakta bir çatlak var ve üstü sarımsı bir tozla kaplı. İçine bakmak için merdiven lazım.",{who:"SU DEPOSU"}); addClue("tankOutside"); return; }
+    if(!S.clues.tankInside){ say("Merdivene çıkıp kapağı aralıyorsun. Ağır, tatlı bir koku yükseliyor. Suyun yüzeyinde ince sarı bir tabaka var, çürümüş beyaz çiçekler yüzüyor. Kapaktaki çatlaktan içeri sürekli sarı toz yağıyor.",{who:"SU DEPOSU"}); addClue("tankOutside"); addClue("tankInside"); addMin(15); return; }
+    const opts = [];
+    if(allDed() && !S.tankClean) opts.push({t:"Depoyu boşalt ve temizle (2 saat)", fn:()=>{ addMin(120); S.tankClean=true; say("Vanayı açıp depoyu boşaltıyorsun. Dibe çökmüş sarı çamuru kovalarla taşıyor, depoyu fırçalıyorsun. Sonra temiz suyla dolduruyorsun.",{who:"SU DEPOSU"}); afterFix(); }});
+    if(allDed() && !S.covered && S.items.tarp) opts.push({t:"Çatlak kapağı brandayla sıkıca ört (30 dk)", fn:()=>{ addMin(30); S.covered=true; say("Brandayı kapağın üstüne gerip iple sıkıca bağlıyorsun. Artık içeri toz giremez.",{who:"SU DEPOSU"}); afterFix(); }});
+    opts.push({t:"Bırak"});
+    let txt = S.tankClean ? (S.treeCut||S.covered ? "Depo temiz ve korunuyor." : "Depo temiz ama kapak hâlâ çatlak. Polen yeniden dolacak.") : "Sarı tabaka suyun üstünde duruyor.";
+    if(allDed() && !S.covered && !S.items.tarp && !S.treeCut) txt += "\nKapağı örtmek için marketten branda alabilirsin.";
+    if(!allDed()) txt += "\nNeyle karşı karşıya olduğunu tam bilmiyorsun.";
+    say(txt,{who:"SU DEPOSU",choices:opts});
+  },
+  tree(){
+    const opts=[];
+    if(!S.items.flower) opts.push({t:"Bir çiçek kopar (örnek)", fn:()=>{ S.items.flower=true; addMin(5); toast("Çiçek örneğini aldın"); checkDeductions(); }});
+    if(allDed() && S.items.axe) opts.push({t:"Ağacı kes (3 saat)", fn:()=>{ addMin(180); S.treeCut=true; say("Saatlerce balta sallıyorsun. Kökleri de söküp dikenli kapsülleri torbaya dolduruyorsun. Elini yüzünü yıkarken ağız kuruluğun ilk kez biraz hafifliyor.",{who:"AĞAÇ"}); afterFix(); }});
+    else if(allDed() && !S.items.axe) opts.push({t:"(Kesmek için balta lazım. Depoda olabilir.)", fn:()=>{}});
+    opts.push({t:"Bırak"});
+    let txt = "Beyaz, huni biçimli çiçekleri ve dikenli tohum kapsülleri olan, insan boyunu aşmış bir bitki. Rüzgâr estikçe sarı polen depoya doğru savruluyor.";
+    if(S.toxin>55) txt += "\n\nYaprakları sen bakınca kıpırdıyor gibi. Çiçekler sana dönmüş.";
+    say(txt,{who:"BAHÇEDEKİ AĞAÇ",choices:opts}); addClue("treeSeen");
+  },
+  mailbox(){
+    if(S.day>=2 && !S.clues.bill){ say("SU FATURASI — Değirmen Sokak 7. Şebeke tüketimi: 0 m³. Not: Mülk şebekeye bağlı değildir; tüketim bahçe deposundan karşılanır.",{note:1,who:"POSTA KUTUSU"}); addClue("bill"); }
+    else if(S.day>=3 && !S.flags.loanMail){ S.flags.loanMail=true; say("Bankadan mektup: 'Kredi taksitiniz bugün hesabınızdan tahsil edilecektir: 350 TL.'",{note:1,who:"POSTA KUTUSU"}); }
+    else say("Posta kutusu boş.");
+  },
+  gate(){
+    say("Sokak sessiz. Market on dakika yürüme mesafesinde.",{who:"BAHÇE KAPISI",choices:[
+      {t:"Markete git (1 saat)", if:()=>S.min>=8*60 && S.min<21*60, fn:shop},
+      {t:"(Market kapalı. 08:00–21:00)", if:()=>!(S.min>=8*60 && S.min<21*60), fn:()=>{}},
+      {t:"Geri dön"}]});
+  },
+  neighbor(){
+    const lines=[];
+    if(!S.flags.met){ S.flags.met=true; lines.push("Hoş geldin evladım. Ben Nermin, yan evdeyim. Bu eve kimse uzun dayanamadı. Aksoylar iyi insanlardı… Bir gün bağırıp çağırarak çıktılar, kızcağızı ambulans aldı."); }
+    if(S.items.flower && !S.clues.neighborFlower){ lines.push("O elindeki ne? Aman, at onu! O şeytan elmasıdır. Bizim köyde tatula derlerdi. Hayvanlar bile yaklaşmazdı."); addClue("neighborFlower"); }
+    else if(S.clues.tankOutside && !S.flags.askTank){ S.flags.askTank=true; lines.push("O depo mu? Aksoylar taşındığından beri kimse temizlemedi. O ağaç da kendi kendine bitti deponun dibinde. Kimse dikmedi."); }
+    if(S.toxin>45) lines.push("Gözlerin kıpkırmızı olmuş. Sen iyi misin?");
+    if(!lines.length) lines.push(waterSafe() ? "Bugün daha iyi görünüyorsun. Yüzüne renk gelmiş." : "Kendine iyi bak evladım. O evde bir tuhaflık var.");
+    lines.forEach(l=>say(l,{who:"NERMİN TEYZE"})); addMin(10);
+  },
+  girl(){
+    const ls = ["Sen de mi duyuyorsun? Ağaç geceleri şarkı söylüyor.","Suyun tadı acı, değil mi? Annem de öyle derdi.","Benim adım Elif. Burası benim odam."];
+    say(ls[Math.floor(Math.random()*ls.length)],{who:"KÜÇÜK KIZ"}); addClue("girl"); S.flags.girlFade=true;
+  },
+  writing(){ say("Duvarda kocaman, akan harfler var: BU EV SENİ İSTİYOR.\n\nGözlerini kırpıyorsun. Harfler hâlâ orada… ya da değil.",{who:"DUVAR"}); addClue("writing"); }
+};
+function shop(){
+  addMin(60);
+  say("Kasabanın küçük marketi. Kasadaki adam seni süzüyor: 'Değirmen Sokak'taki eve mi taşındın?'",{who:"MARKET · Paran: "+S.money+" TL",choices:[
+    {t:"6 şişe su al (80 TL)", fn:()=>{ if(S.money<80) return say("Paran yetmiyor."); S.money-=80; S.bottles+=6; toast("6 şişe su aldın"); shopAgain(); }},
+    {t:"Branda ve ip al (150 TL)", if:()=>!S.items.tarp, fn:()=>{ if(S.money<150) return say("Paran yetmiyor."); S.money-=150; S.items.tarp=true; toast("Branda ve ip aldın"); shopAgain(); }},
+    {t:"Eve dön"}]});
+}
+function shopAgain(){ say("Başka bir şey?",{who:"MARKET · Paran: "+S.money+" TL",choices:[
+  {t:"6 şişe su daha (80 TL)", fn:()=>{ if(S.money<80) return say("Paran yetmiyor."); S.money-=80; S.bottles+=6; toast("6 şişe su aldın"); shopAgain(); }},
+  {t:"Branda ve ip (150 TL)", if:()=>!S.items.tarp, fn:()=>{ if(S.money<150) return say("Paran yetmiyor."); S.money-=150; S.items.tarp=true; toast("Branda ve ip aldın"); shopAgain(); }},
+  {t:"Eve dön"}]}); }
+function afterFix(){
+  if(waterSafe()) say("Kaynak kesildi. Artık musluk suyu temiz. Tek yapman gereken temiz su içip zehrin vücudundan atılmasını beklemek.",{who:"PLAN"});
+  else if(S.tankClean) say("Depo temiz ama polen girmeye devam ederse bir gecede yine dolar. Ya ağacı kes ya da kapağı ört.",{who:"PLAN"});
+  else say("Polenin girişi kesildi ama depodaki su hâlâ zehirli. Depoyu boşaltıp temizlemelisin.",{who:"PLAN"});
+}
+
+// ======================= SONLAR =======================
+const ENDINGS = {
+  good:{h:"Temiz Su", p:"Günler geçtikçe köşelerdeki gölgeler soluyor. Elif'in sesi artık gelmiyor; çünkü Elif hiç burada değildi. Nermin Teyze'yle birlikte belediyeye dilekçe veriyorsunuz, sokak şebekeye bağlanacak.\n\nBir akşam bahçede oturuyorsun. Ağır, tatlı bir koku yok artık. Sadece ıslak toprak."},
+  poison:{h:"Beyaz Çiçekler", p:"Gerçekle hayal arasındaki çizgi tamamen kayboldu. Nermin Teyze seni bahçede, ağacın dibinde konuşurken bulup ambulans çağırdı.\n\nDoktorlar 'toplu panik' demedi bu kez ama kaynağı da bulamadılar. Bir ay sonra Değirmen Sokak 7 yine satılık: yarı fiyatına."},
+  escape:{h:"Kaçış", p:"Bir hafta daha dayanamadın. Evi alış fiyatının çok altına emlakçıya geri sattın. Borçla, bir valizle kasabadan ayrılırken arkana bakmadın.\n\nBahçedeki ağaç yeni sahiplerini bekliyor."}
+};
+function ending(k){
+  S.over=true; paused=true; dlgQueue=[]; nextDlg();
+  const e=ENDINGS[k], o=$("overlay");
+  const solved = Object.keys(S.ded).filter(x=>S.ded[x]).length;
+  o.innerHTML = `<h2>Son: ${e.h}</h2><p style="white-space:pre-line">${e.p}</p><p class="keys">Gün ${S.day} · Çıkarımlar ${solved}/3 · Kalan para ${S.money} TL</p><button id="btnAgain" type="button">Baştan başla</button>`;
+  o.hidden=false;
+  $("btnAgain").onclick=()=>{ S=freshState(); shadows.length=0; o.hidden=true; paused=false; intro(); };
+}
+
+// ======================= GÖLGELER =======================
+const shadows=[];
+function updateShadows(dt){
+  const want = S.toxin<45 ? 0 : Math.min(5, 1+Math.floor((S.toxin-45)/12));
+  while(shadows.length<want){
+    let x,y,tries=0;
+    do{ x=(1+Math.random()*28)*T; y=(1+Math.random()*17)*T; tries++; }while(Math.hypot(x-S.px,y-S.py)<200 && tries<20);
+    shadows.push({x,y,ph:Math.random()*6,life:0});
+  }
+  while(shadows.length>want) shadows.pop();
+  const chase = S.toxin>=70;
+  shadows.forEach(s=>{
+    s.life+=dt; s.ph+=dt;
+    const dx=S.px+10-s.x, dy=S.py+10-s.y, d=Math.hypot(dx,dy)||1;
+    const sp = chase ? 38 : 14;
+    if(chase || d<160){ s.x+=dx/d*sp*dt; s.y+=dy/d*sp*dt; } else { s.x+=Math.cos(s.ph*.7)*10*dt; s.y+=Math.sin(s.ph*.5)*10*dt; }
+    if(d<18 && !dlgOpen){
+      addClue("shadow");
+      flash=1; thump();
+      say(["Gölge içinden geçti. Buz gibi bir şey göğsüne doldu, dizlerin titredi.","Bir el omzuna dokundu. Döndüğünde kimse yoktu.","Kulağının dibinde biri adını fısıldadı."][Math.floor(Math.random()*3)]);
+      addMin(20); s.x=(1+Math.random()*28)*T; s.y=(1+Math.random()*17)*T;
+    }
+  });
+}
+
+// ======================= HAREKET =======================
+function rectHitsSolid(x,y,w,h){
+  const x0=Math.floor(x/T), x1=Math.floor((x+w-1)/T), y0=Math.floor(y/T), y1=Math.floor((y+h-1)/T);
+  for(let cy=y0;cy<=y1;cy++) for(let cx=x0;cx<=x1;cx++) if(SOLID.has(tileAt(cx,cy))) return true;
+  for(const o of OBJ){ if(!o.solid||!visible(o)) continue;
+    if(x<(o.x+o.w)*T && x+w>o.x*T && y<(o.y+o.h)*T && y+h>o.y*T) return true; }
+  return false;
+}
+const PS = 20;
+function move(dt){
+  let vx=0, vy=0;
+  if(keys.left) vx--; if(keys.right) vx++; if(keys.up) vy--; if(keys.down) vy++;
+  if(vx||vy){ if(Math.abs(vx)>=Math.abs(vy)) S.dir = vx<0?"left":"right"; else S.dir = vy<0?"up":"down"; }
+  const thirstSlow = S.thirst>=90 ? .6 : 1;
+  let sp = 130*thirstSlow;
+  if(S.toxin>=85){ vx += Math.sin(perfNow/700)*.5; vy += Math.cos(perfNow/900)*.5; }
+  const len=Math.hypot(vx,vy); if(!len) return;
+  vx=vx/len*sp*dt; vy=vy/len*sp*dt;
+  if(!rectHitsSolid(S.px+vx,S.py,PS,PS)) S.px+=vx;
+  if(!rectHitsSolid(S.px,S.py+vy,PS,PS)) S.py+=vy;
+}
+function nearestObj(){
+  const cx=S.px+PS/2, cy=S.py+PS/2; let best=null, bd=1e9;
+  for(const o of OBJ){
+    if(!o.label||!visible(o)) continue;
+    const rx=Math.max(o.x*T,Math.min(cx,(o.x+o.w)*T)), ry=Math.max(o.y*T,Math.min(cy,(o.y+o.h)*T));
+    const d=Math.hypot(cx-rx,cy-ry);
+    if(d<26 && d<bd){bd=d;best=o;}
+  }
+  return best;
+}
+function interact(){
+  if(paused||S.over) return;
+  if(dlgOpen){ const b=$("dChoices").children; if(b.length===1) b[0].click(); return; }
+  const o=nearestObj(); if(o && ACT[o.id]) ACT[o.id]();
+}
+
+// ======================= ÇİZİM =======================
+let perfNow=0, flash=0, pollen=[];
+for(let i=0;i<40;i++) pollen.push({t:Math.random()});
+function drawTile(c,cx,cy){
+  const x=cx*T,y=cy*T,r=seed[cy*COLS+cx];
+  if(c==="#"){ c="#"; wctx.fillStyle="#3a352d"; wctx.fillRect(x,y,T,T); wctx.fillStyle="#4a443a"; wctx.fillRect(x,y,T,6); return; }
+  if(c==="f"){ wctx.fillStyle="#1d2a17"; wctx.fillRect(x,y,T,T); wctx.fillStyle="#5a4a32"; for(let i=4;i<T;i+=10) wctx.fillRect(x+i,y+4,4,T-8); wctx.fillRect(x,y+10,T,3); return; }
+  if(c==="G"){ wctx.fillStyle="#1d2a17"; wctx.fillRect(x,y,T,T); wctx.fillStyle="#7a6a4a"; wctx.fillRect(x+2,y+6,T-4,T-12); wctx.fillStyle="#3a2e1e"; wctx.fillRect(x+15,y+6,2,T-12); return; }
+  if(c==="g"){ wctx.fillStyle = r>.5?"#26361f":"#233220"; wctx.fillRect(x,y,T,T); wctx.fillStyle="#30442a"; wctx.fillRect(x+r*24,y+(1-r)*24,3,3); wctx.fillRect(x+(1-r)*20+6,y+r*20+4,2,4); return; }
+  if(c==="p"){ wctx.fillStyle="#5b5141"; wctx.fillRect(x,y,T,T); wctx.fillStyle="#4c4436"; wctx.fillRect(x+r*20,y+6,8,5); return; }
+  if(c===","){ wctx.fillStyle=((cx+cy)%2)?"#6c7471":"#5e6663"; wctx.fillRect(x,y,T,T); return; }
+  // ahşap zemin / kapı
+  wctx.fillStyle = c==="d" ? "#5a4530" : "#4d3b29"; wctx.fillRect(x,y,T,T);
+  wctx.fillStyle="#3f3022"; wctx.fillRect(x,y+((cx*7)%4)*8,T,1); wctx.fillRect(x,y+15,T,1);
+}
+function drawObj(o){
+  const x=o.x*T,y=o.y*T,w=o.w*T,h=o.h*T, c=wctx, t=perfNow/1000;
+  switch(o.kind){
+    case "bed": c.fillStyle="#5a3f2a"; c.fillRect(x+2,y+2,w-4,h-4); c.fillStyle="#8a8f9a"; c.fillRect(x+6,y+5,w-12,h-10); c.fillStyle="#cfcfc4"; c.fillRect(x+6,y+5,14,h-10); break;
+    case "crate": c.fillStyle="#6b4e33"; c.fillRect(x+4,y+4,w-8,h-8); c.fillStyle="#4a3524"; c.fillRect(x+4,y+14,w-8,2); break;
+    case "shelf": c.fillStyle="#4a3524"; c.fillRect(x+2,y+2,w-4,h-6); for(let i=0;i<14;i++){ c.fillStyle=["#7a3b2e","#3d5a6b","#6b6a3d","#5a3d6b"][i%4]; c.fillRect(x+6+i*6.4,y+6,4,10);} break;
+    case "phone": c.fillStyle="#4a3524"; c.fillRect(x+4,y+8,w-8,h-12); c.fillStyle="#222"; c.fillRect(x+9,y+11,14,8); break;
+    case "table": c.fillStyle="#5a4330"; c.fillRect(x+4,y+6,w-8,h-10); c.fillStyle="#222"; c.fillRect(x+22,y+9,20,12); c.fillStyle=`rgba(120,170,220,${.5+.2*Math.sin(t*2)})`; c.fillRect(x+24,y+10,16,8); break;
+    case "sofa": c.fillStyle="#4b2f2f"; c.fillRect(x+4,y+2,w-6,h-4); c.fillStyle="#5d3a3a"; c.fillRect(x+10,y+6,w-14,h-12); break;
+    case "box": c.fillStyle="#9a7a50"; c.fillRect(x+4,y+6,w-8,h-10); c.fillStyle="#c9b07a"; c.fillRect(x+14,y+6,4,h-10); break;
+    case "mirror": c.fillStyle="#d8dcd8"; c.fillRect(x+6,y+12,w-12,h-14); c.fillStyle="#8fa3ad"; c.fillRect(x+8,y+1,w-16,10); break;
+    case "tub": c.fillStyle="#d8dcd8"; c.fillRect(x+2,y+4,w-4,h-6); c.fillStyle="#9fb4bf"; c.fillRect(x+6,y+8,w-12,h-14); break;
+    case "tap": c.fillStyle="#8a8f8f"; c.fillRect(x+2,y+4,w-4,h-6); c.fillStyle="#5a6f6a"; c.fillRect(x+6,y+8,w-12,h-14); c.fillStyle="#c0c0c0"; c.fillRect(x+14,y+4,4,8); break;
+    case "counter": c.fillStyle="#7a7f7f"; c.fillRect(x+1,y+4,w-2,h-6); break;
+    case "fridge": c.fillStyle="#c9ccc6"; c.fillRect(x+3,y+1,w-6,h-2); c.fillStyle="#888"; c.fillRect(x+w-10,y+8,2,10); break;
+    case "ladder": c.strokeStyle="#a88a5a"; c.lineWidth=3; c.beginPath(); c.moveTo(x+9,y+2); c.lineTo(x+9,y+30); c.moveTo(x+23,y+2); c.lineTo(x+23,y+30); for(let i=6;i<30;i+=7){c.moveTo(x+9,y+i);c.lineTo(x+23,y+i);} c.stroke(); break;
+    case "chest": c.fillStyle="#4f3a22"; c.fillRect(x+3,y+5,w-6,h-8); c.fillStyle="#a08040"; c.fillRect(x+w/2-3,y+12,6,6); break;
+    case "axe": c.fillStyle="#7a5a3a"; c.save(); c.translate(x+16,y+16); c.rotate(-.7); c.fillRect(-2,-12,4,24); c.fillStyle="#aab"; c.fillRect(-2,-13,10,7); c.restore(); break;
+    case "tank": {
+      c.fillStyle="#555b55"; c.fillRect(x+2,y+h-14,w-4,12);
+      c.fillStyle="#6f8086"; c.fillRect(x+6,y+4,w-12,h-18); c.fillStyle="#7f9096"; c.fillRect(x+6,y+4,w-12,8);
+      c.fillStyle= S.covered? "#3d5a7a" : "rgba(217,194,90,.55)"; c.fillRect(x+8,y+4,w-16,6);
+      if(!S.covered){ c.strokeStyle="#222"; c.lineWidth=1.5; c.beginPath(); c.moveTo(x+20,y+5); c.lineTo(x+30,y+9); c.lineTo(x+38,y+5); c.stroke(); }
+      c.strokeStyle="#4a4f4a"; c.lineWidth=4; c.beginPath(); c.moveTo(x+6,y+h-20); c.lineTo(20*T-2,y+h-20); c.lineTo(20*T-2,8.5*T); c.stroke();
+      break; }
+    case "tree": {
+      c.fillStyle="#3a2a1a"; c.fillRect(x+w/2-5,y+h/2,10,h/2);
+      c.fillStyle="#1f3a1d"; c.beginPath(); c.arc(x+w/2,y+h/2-2,w/2-2,0,7); c.fill();
+      c.fillStyle="#2c4d27"; c.beginPath(); c.arc(x+w/2-8,y+h/2-8,w/3,0,7); c.fill();
+      const sway = S.toxin>55 ? Math.sin(t*1.5)*3 : 0;
+      for(let i=0;i<9;i++){ const a=i*0.7+t*0.05, fx=x+w/2+Math.cos(a*2.3)*(w/3)+sway, fy=y+h/2-4+Math.sin(a*1.7)*(h/3);
+        c.fillStyle="#efe9d2"; c.beginPath(); c.moveTo(fx,fy); c.lineTo(fx-5,fy+9); c.lineTo(fx+5,fy+9); c.fill(); c.fillStyle="#b9a6c9"; c.fillRect(fx-1,fy+7,2,2); }
+      break; }
+    case "stump": c.fillStyle="#4a3a2a"; c.beginPath(); c.arc(x+w/2,y+h/2+8,9,0,7); c.fill(); c.fillStyle="#6a5a3a"; c.beginPath(); c.arc(x+w/2,y+h/2+8,5,0,7); c.fill(); break;
+    case "mailbox": c.fillStyle="#3a2a1a"; c.fillRect(x+14,y+14,4,18); c.fillStyle="#8a3b2e"; c.fillRect(x+6,y+4,20,12); break;
+    case "npc": person(c,x+16,y+16,"#7a5a6a","#d9b99a",false); c.fillStyle="#ddd"; c.fillRect(x+10,y+2,12,5); break;
+    case "girl": { const a = .35+.35*Math.abs(Math.sin(t*.8)); c.globalAlpha=a; person(c,x+16,y+16,"#e8e4dc","#e8d8c8",false); c.globalAlpha=1; break; }
+    case "writing": c.fillStyle=`rgba(140,20,20,${.6+.3*Math.sin(t*3)})`; c.font="bold 13px 'Special Elite',monospace"; c.fillText("BU EV SENİ",x+2,y+14); c.fillText("İSTİYOR",x+10,y+28); break;
+  }
+}
+function person(c,x,y,body,skin,eyes){
+  c.fillStyle=body; c.beginPath(); c.arc(x,y+4,9,0,7); c.fill();
+  c.fillStyle=skin; c.beginPath(); c.arc(x,y-6,6,0,7); c.fill();
+}
+function drawPlayer(c){
+  const x=S.px+PS/2, y=S.py+PS/2;
+  c.fillStyle="rgba(0,0,0,.35)"; c.beginPath(); c.ellipse(x,y+10,9,4,0,0,7); c.fill();
+  person(c,x,y,"#3d5468","#d8b48f");
+  c.fillStyle="#222"; const o={up:[0,-9],down:[0,-4],left:[-3,-6],right:[3,-6]}[S.dir];
+  if(S.dir!=="up"){ c.fillRect(x+o[0]-3,y+o[1]-1,2,2); c.fillRect(x+o[0]+1,y+o[1]-1,2,2); }
+}
+function drawWorld(){
+  for(let cy=0;cy<ROWS;cy++) for(let cx=0;cx<COLS;cx++) drawTile(MAP[cy][cx],cx,cy);
+  // halüsinasyon: kanlı ayak izleri
+  if(S.toxin>=50){ wctx.fillStyle="rgba(110,20,20,.55)"; for(let i=0;i<8;i++){ wctx.beginPath(); wctx.ellipse(9*T+i*14,4*T+ (i%2)*10+Math.sin(i)*20,3,5,0,0,7); wctx.fill(); } }
+  OBJ.forEach(o=>{ if(visible(o)) drawObj(o); });
+  // polen: ağaçtan depoya
+  if(!S.treeCut){ pollen.forEach(p=>{ p.t+=0.0015+(S.covered?0:0); if(p.t>1)p.t=0;
+    const sx=26*T, sy=3*T, ex=24*T, ey=5.2*T, px=sx+(ex-sx)*p.t+Math.sin(p.t*12+perfNow/600)*10, py=sy+(ey-sy)*p.t+Math.cos(p.t*9)*6;
+    wctx.fillStyle=`rgba(217,194,90,${.7*(1-p.t*.4)})`; wctx.fillRect(px,py,2,2); }); }
+  drawPlayer(wctx);
+  // gölgeler
+  shadows.forEach(s=>{ const a=Math.min(.85,s.life*.6)*(.7+.3*Math.sin(s.ph*2));
+    wctx.fillStyle=`rgba(5,5,8,${a})`; wctx.beginPath(); wctx.ellipse(s.x,s.y,10,20,0,0,7); wctx.fill(); wctx.beginPath(); wctx.arc(s.x,s.y-22,8,0,7); wctx.fill();
+    if(S.toxin>=65){ wctx.fillStyle=`rgba(230,220,180,${a})`; wctx.fillRect(s.x-4,s.y-24,2,2); wctx.fillRect(s.x+2,s.y-24,2,2);} });
+  // gece karanlığı
+  const m=S.min%1440, night = m>=20*60||m<6*60 ? 1 : m>=18*60 ? (m-18*60)/120 : 0;
+  if(night>0){
+    const g=wctx.createRadialGradient(S.px+10,S.py+10,30,S.px+10,S.py+10,220);
+    g.addColorStop(0,"rgba(0,0,10,0)"); g.addColorStop(1,`rgba(2,3,12,${.72*night})`);
+    wctx.fillStyle=g; wctx.fillRect(0,0,W,H);
+  }
+}
+function render(){
+  drawWorld();
+  const tx=S.toxin, amp = tx>40 ? (tx-40)/60*7 : 0, t=perfNow/1000;
+  ctx.save();
+  ctx.filter = tx>30 ? `hue-rotate(${Math.sin(t*.3)*(tx-30)*.8}deg) saturate(${1+(tx-30)/60})` : "none";
+  if(amp>0){ const sh=8; for(let y=0;y<H;y+=sh){ const off=Math.sin(y*.02+t*1.8)*amp; ctx.drawImage(world,0,y,W,sh,off,y,W,sh); } }
+  else ctx.drawImage(world,0,0);
+  ctx.filter="none";
+  if(tx>=70){ ctx.globalAlpha=.18; ctx.drawImage(world,6+Math.sin(t)*4,3); ctx.globalAlpha=1; }
+  // vinyet
+  if(tx>20){ const g=ctx.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.85); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,`rgba(20,0,10,${Math.min(.75,(tx-20)/80)})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  if(tx>45 && Math.random()<(tx-45)/2000){ ctx.fillStyle="rgba(255,255,255,.06)"; ctx.fillRect(0,0,W,H); }
+  if(flash>0){ ctx.fillStyle=`rgba(255,240,230,${flash*.5})`; ctx.fillRect(0,0,W,H); flash=Math.max(0,flash-.05); }
+  ctx.restore();
+}
+
+// ======================= HUD / DEFTER =======================
+const mindLabel = t => t<25?"Berrak":t<45?"Huzursuz":t<70?"Bulanık":t<85?"Kopuyor":"Kayboluyor";
+function goalText(){
+  if(waterSafe()) return "Temiz su iç ve dinlen. Zehrin vücudundan atılmasını bekle.";
+  if(allDed()){
+    const need=[]; if(!S.tankClean) need.push("depoyu temizle"); if(!S.treeCut&&!S.covered) need.push(S.items.axe?"ağacı kes ya da depoyu ört":"baltayı bul ya da branda al");
+    return "Çözüm: "+need.join(", ")+". Bu arada şişe su iç.";
+  }
+  if(Object.keys(S.clues).length<2) return "Yeni evini keşfet. Nesnelere yaklaşıp E'ye bas.";
+  if(!S.ded.poison) return S.toxin>=30 ? "Kendinde bir tuhaflık var. Bir aynaya bak." : "Bu evde neler olmuş? İpuçlarını topla.";
+  if(!S.ded.plant) return S.items.flower ? "Çiçeğin ne olduğunu öğren: kitaplık, internet ya da komşu." : "Bahçedeki ağacı incele.";
+  if(!S.ded.source) return S.items.ladder ? "Su deposunun içine bak." : "Su deposunun içine bakmak için merdiven bul.";
+  return "";
+}
+function hud(){
+  $("hTime").textContent = S.day+". gün · "+hhmm(S.min);
+  $("hMoney").textContent = S.money+" TL";
+  $("hThirst").textContent = S.thirst>=90?"Dayanılmaz":S.thirst>=65?"Susamış":S.thirst>=35?"Normal":"Kanmış";
+  $("thirstBar").style.width = S.thirst+"%";
+  $("hMind").textContent = mindLabel(S.toxin);
+  $("mindBar").style.width = Math.min(100,S.toxin)+"%";
+  const it=[]; if(S.items.ladder)it.push("merdiven"); if(S.items.axe)it.push("balta"); if(S.items.flower)it.push("çiçek örneği"); if(S.items.tarp)it.push("branda"); if(S.bottles)it.push(S.bottles+" şişe su");
+  $("hItems").textContent = it.join(", ")||"—";
+  $("goal").textContent = goalText();
+  const o = (!paused && !dlgOpen) ? nearestObj() : null;
+  const pr=$("prompt"); if(o){ pr.hidden=false; pr.textContent="E · "+o.label; } else pr.hidden=true;
+}
+function renderJournal(){
+  const j=$("journal"), known=S.ded.poison;
+  const real = Object.keys(S.clues).filter(k=>!CLUES[k].hallu), hal = Object.keys(S.clues).filter(k=>CLUES[k].hallu);
+  j.innerHTML = `<button class="close" id="jClose" type="button">Kapat (J)</button>
+  <h3>Bulduklarım</h3><ul>${real.map(k=>`<li><b>${CLUES[k].t}:</b> ${CLUES[k].d}</li>`).join("")||"<li>Henüz bir şey yok.</li>"}</ul>
+  <h3>Gördüklerim</h3><ul>${hal.map(k=>`<li class="hallu ${known?"known":""}"><b>${CLUES[k].t}:</b> ${CLUES[k].d}</li>`).join("")||"<li>Tuhaf bir şey görmedim… henüz.</li>"}</ul>
+  ${known&&hal.length?"<p class='done'>Bunların hiçbiri gerçek değildi.</p>":""}
+  <h3>Çıkarımlar</h3><ul>${Object.keys(DEDS).map(k=>`<li class="${S.ded[k]?"done":""}">${S.ded[k]?"✔ "+DEDS[k].t:"? …"}</li>`).join("")}</ul>
+  <h3>Yapılacaklar</h3><ul><li>${goalText()||"—"}</li></ul>`;
+  $("jClose").onclick=toggleJournal;
+}
+function toggleJournal(){ if(S.over||$("overlay").hidden===false) return; journalOpen=!journalOpen; $("journal").hidden=!journalOpen; if(journalOpen) renderJournal(); }
+
+// ======================= DÖNGÜ =======================
+let last=performance.now(), hudT=0;
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now; perfNow=now;
+  const active = !paused && !dlgOpen && !journalOpen && !S.over;
+  if(active){
+    move(dt);
+    addMin(dt*3);            // 1 sn = 3 oyun dakikası
+    updateShadows(dt);
+    if(S.thirst>=100){ const b=S.bottles>0; say(b ? "Boğazın yanıyor. Buzdolabına koşup bir şişe suyu bir dikişte bitiriyorsun." : "Boğazın yanıyor, dayanamıyorsun. Musluğa koşup kana kana içiyorsun.",{who:"SUSUZLUK"}); drink(!b); }
+    if(S.min>=25*60){ sleep(true); }
+    if(S.toxin>=100) ending("poison");
+    else if(waterSafe() && S.toxin<15) ending("good");
+  }
+  render(); audioTick(now);
+  if((hudT+=dt)>.1){ hudT=0; hud(); }
+  requestAnimationFrame(loop);
+}
+
+// ======================= GİRDİ =======================
+const KEYMAP={ArrowUp:"up",KeyW:"up",ArrowDown:"down",KeyS:"down",ArrowLeft:"left",KeyA:"left",ArrowRight:"right",KeyD:"right"};
+addEventListener("keydown",e=>{
+  if(KEYMAP[e.code]){ keys[KEYMAP[e.code]]=true; e.preventDefault(); }
+  if(e.code==="KeyJ"){ toggleJournal(); }
+  if((e.code==="KeyE"||e.code==="Space"||e.code==="Enter") && !e.repeat){ if(e.code!=="KeyE" && document.activeElement && document.activeElement.tagName==="BUTTON") return; e.preventDefault(); interact(); }
+  if(dlgOpen && /^Digit[1-4]$/.test(e.code)) chooseKey(+e.code.slice(5)-1);
+});
+addEventListener("keyup",e=>{ if(KEYMAP[e.code]) keys[KEYMAP[e.code]]=false; });
+addEventListener("blur",()=>{ for(const k in keys) keys[k]=false; });
+document.querySelectorAll(".dpad button").forEach(b=>{
+  const k=b.dataset.k;
+  b.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true;b.setPointerCapture(e.pointerId);});
+  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false));
+});
+$("padE").onclick=interact; $("padJ").onclick=toggleJournal;
+$("btnJournal").onclick=toggleJournal;
+$("btnSound").onclick=()=>{ soundOn=!soundOn; $("btnSound").textContent="Ses: "+(soundOn?"açık":"kapalı"); };
+
+function intro(){
+  say("Değirmen Sokak 7. Duvarlar nemli, pencereler kirli ama artık senin. Taşınma kolisini salona bıraktın.",{who:"1. GÜN"});
+  say("Garip… Musluk suyunun tadı biraz acımsıydı. Neyse, yorgunluktandır.",{who:"DÜŞÜNCE"});
+}
+$("btnStart").onclick=()=>{ $("overlay").hidden=true; if(!AC) initAudio(); else AC.resume(); paused=false; intro(); };
+
+// Açık görüntüleyicide güncelleme gelirse oyunu koru
+window.claude?.hot?.snapshot?.(()=>({S, started:$("overlay").hidden}));
+function start(data){
+  if(data && data.S){ S=data.S; if(data.started){ $("overlay").hidden=true; paused=false; } }
+  requestAnimationFrame(loop);
+}
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+</body>
+</html>
