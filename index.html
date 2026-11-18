@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Değer Orta</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#1d2433; --muted:#5d6678;
+    --accent:#3b6cf6; --ok:#1f9d55; --bad:#d64545; --chip:#e8edfb; --line:#d9dfec;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#11151f; --card:#1b2130; --ink:#e8ecf5; --muted:#9aa4b8;
+      --accent:#6f95ff; --ok:#43c37a; --bad:#ff6b6b; --chip:#263049; --line:#2c3549;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+  main{max-width:680px;margin:0 auto;padding:24px 16px 48px}
+  h1{margin:0 0 4px;font-size:1.8rem}
+  .sub{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+  .hud{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .hud div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.9rem}
+  .hud b{font-size:1.1rem}
+  .nums{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .nums span{background:var(--chip);border-radius:8px;padding:8px 12px;font-weight:700;font-size:1.2rem;min-width:44px;text-align:center}
+  .q{font-size:1.15rem;font-weight:600}
+  .timer{height:6px;background:var(--chip);border-radius:3px;overflow:hidden;margin-top:12px}
+  .timer i{display:block;height:100%;background:var(--accent);width:100%;transition:width .2s linear}
+  form{display:flex;gap:8px;margin-top:14px}
+  input{flex:1;min-width:0;font-size:1.1rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  button{font-size:1rem;padding:10px 16px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+  button.ghost{background:var(--chip);color:var(--ink)}
+  .msg{min-height:1.5em;margin-top:12px;font-weight:600}
+  .ok{color:var(--ok)} .bad{color:var(--bad)}
+  .levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+  .levels button{padding:14px;text-align:left}
+  .levels small{display:block;font-weight:400;opacity:.85}
+  ul.help{padding-left:20px;margin:8px 0 0;color:var(--muted)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>Değer Orta</h1>
+  <p class="sub">Sayı dizisine bak, istenen merkezi eğilim ya da yayılım ölçüsünü bul.</p>
+
+  <section id="menu" class="card">
+    <div class="q">Seviye seç</div>
+    <div class="levels">
+      <button data-level="1">1 · Kolay<small>Ortalama, mod · 4–5 sayı</small></button>
+      <button data-level="2">2 · Orta<small>+ medyan, açıklık · 5–7 sayı</small></button>
+      <button data-level="3">3 · Zor<small>Hepsi · 7–9 sayı · ondalık</small></button>
+    </div>
+    <ul class="help">
+      <li><b>Ortalama:</b> sayıların toplamı ÷ sayı adedi</li>
+      <li><b>Medyan:</b> sıralayınca tam ortadaki değer (çift adette ortadaki ikisinin ortalaması)</li>
+      <li><b>Mod:</b> en çok tekrar eden değer</li>
+      <li><b>Açıklık:</b> en büyük − en küçük</li>
+    </ul>
+    <p class="sub" id="best" style="margin:12px 0 0"></p>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="hud">
+      <div>Soru <b id="qn">1</b>/10</div>
+      <div>Puan <b id="score">0</b></div>
+      <div>Seri <b id="streak">0</b></div>
+      <div>Can <b id="lives">♥♥♥</b></div>
+    </div>
+    <div class="card">
+      <div class="q" id="question"></div>
+      <div class="nums" id="nums"></div>
+      <div class="timer"><i id="bar"></i></div>
+      <form id="form" autocomplete="off">
+        <input id="answer" inputmode="decimal" placeholder="Cevabın (ör. 7 veya 6,5)" aria-label="Cevap">
+        <button type="submit">Gönder</button>
+      </form>
+      <div class="msg" id="msg"></div>
+    </div>
+  </section>
+
+  <section id="end" class="card hidden">
+    <div class="q" id="endTitle"></div>
+    <p id="endText"></p>
+    <button id="again">Tekrar oyna</button>
+    <button class="ghost" id="toMenu">Seviye menüsü</button>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const LEVELS = {
+  1:{kinds:["mean","mode"], n:[4,5], max:20, time:30},
+  2:{kinds:["mean","median","mode","range"], n:[5,7], max:40, time:25},
+  3:{kinds:["mean","median","mode","range"], n:[7,9], max:60, time:20}
+};
+const NAMES = {mean:"ortalamasını", median:"medyanını", mode:"modunu", range:"açıklığını"};
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+let st = null, timerId = null;
+
+function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){return null;} }
+function showBest(){
+  const parts=[1,2,3].map(l=>{const b=store("degerOrta.best"+l);return b?`Seviye ${l}: ${b}`:null}).filter(Boolean);
+  $("best").textContent = parts.length ? "En iyi skorlar — " + parts.join(" · ") : "";
+}
+
+function makeQuestion(level){
+  const L = LEVELS[level];
+  const kind = L.kinds[rnd(0,L.kinds.length-1)];
+  const n = rnd(L.n[0], L.n[1]);
+  let nums;
+  if(kind==="mean"){
+    // Seviye 1-2: tam sayı ortalama; seviye 3: .5 olabilir
+    do{
+      nums = Array.from({length:n},()=>rnd(1,L.max));
+      const s = nums.reduce((a,b)=>a+b,0);
+      if(level<3 && s%n===0) break;
+      if(level===3 && (s*2)%n===0) break;
+    }while(true);
+  } else if(kind==="mode"){
+    const m = rnd(1,L.max);
+    const reps = Math.min(n-1, rnd(2,3));
+    nums = Array(reps).fill(m);
+    const used = new Set([m]);
+    while(nums.length<n){ const x=rnd(1,L.max); if(!used.has(x)){used.add(x);nums.push(x);} }
+    nums.sort(()=>Math.random()-.5);
+  } else {
+    nums = Array.from({length:n},()=>rnd(1,L.max));
+    if(kind==="median" && level<3 && n%2===0){
+      const s=[...nums].sort((a,b)=>a-b);
+      if((s[n/2-1]+s[n/2])%2) nums[0]++; // tam sayı medyan için ayarla
+      const s2=[...nums].sort((a,b)=>a-b);
+      if((s2[n/2-1]+s2[n/2])%2) nums.push(s2[n/2]), nums.push(s2[n/2]);
+    }
+  }
+  return {kind, nums, answer: solve(kind, nums)};
+}
+
+function solve(kind, nums){
+  const s=[...nums].sort((a,b)=>a-b), n=s.length;
+  if(kind==="mean") return nums.reduce((a,b)=>a+b,0)/n;
+  if(kind==="median") return n%2 ? s[(n-1)/2] : (s[n/2-1]+s[n/2])/2;
+  if(kind==="range") return s[n-1]-s[0];
+  const c={}; nums.forEach(x=>c[x]=(c[x]||0)+1);
+  return +Object.keys(c).sort((a,b)=>c[b]-c[a])[0];
+}
+
+function explain(q){
+  const s=[...q.nums].sort((a,b)=>a-b), n=s.length, f=fmt(q.answer);
+  if(q.kind==="mean") return `Toplam ${q.nums.reduce((a,b)=>a+b,0)} ÷ ${n} = ${f}`;
+  if(q.kind==="median") return `Sıralı: ${s.join(", ")} → medyan ${f}`;
+  if(q.kind==="range") return `${s[n-1]} − ${s[0]} = ${f}`;
+  return `${f} değeri en çok tekrar ediyor`;
+}
+const fmt = x => (Math.round(x*100)/100).toString().replace(".",",");
+
+function start(level){
+  st = {level, q:0, score:0, streak:0, lives:3, cur:null};
+  $("menu").classList.add("hidden"); $("end").classList.add("hidden"); $("game").classList.remove("hidden");
+  next();
+}
+
+function next(){
+  if(st.q>=10 || st.lives<=0) return finish();
+  st.q++; st.cur = makeQuestion(st.level); st.locked=false;
+  $("qn").textContent=st.q; $("score").textContent=st.score; $("streak").textContent=st.streak;
+  $("lives").textContent="♥".repeat(st.lives)+"♡".repeat(3-st.lives);
+  $("question").textContent=`Bu sayıların ${NAMES[st.cur.kind]} bul:`;
+  $("nums").innerHTML=st.cur.nums.map(x=>`<span>${x}</span>`).join("");
+  $("msg").textContent=""; $("msg").className="msg";
+  $("answer").value=""; $("answer").focus();
+  const total=LEVELS[st.level].time*1000, t0=Date.now();
+  st.t0=t0; clearInterval(timerId);
+  timerId=setInterval(()=>{
+    const left=Math.max(0,total-(Date.now()-t0));
+    $("bar").style.width=(left/total*100)+"%";
+    if(left===0){ clearInterval(timerId); judge(null); }
+  },100);
+}
+
+function judge(val){
+  if(st.locked) return; st.locked=true; clearInterval(timerId);
+  const q=st.cur, msg=$("msg");
+  const ok = val!==null && Math.abs(val-q.answer)<0.01;
+  if(ok){
+    const left=Math.max(0,LEVELS[st.level].time*1000-(Date.now()-st.t0))/1000;
+    st.streak++;
+    const pts = 10*st.level + Math.round(left) + (st.streak>=3?5:0);
+    st.score+=pts;
+    msg.textContent=`Doğru! +${pts} puan${st.streak>=3?" (seri bonusu)":""}`; msg.className="msg ok";
+  } else {
+    st.streak=0; st.lives--;
+    msg.textContent=(val===null?"Süre doldu! ":"Yanlış. ")+"Cevap: "+explain(q); msg.className="msg bad";
+  }
+  $("score").textContent=st.score;
+  setTimeout(next, ok?1100:2600);
+}
+
+function finish(){
+  clearInterval(timerId);
+  $("game").classList.add("hidden"); $("end").classList.remove("hidden");
+  const key="degerOrta.best"+st.level, prev=+(store(key)||0);
+  const rec = st.score>prev; if(rec) store(key,st.score);
+  $("endTitle").textContent = st.lives>0 ? "Tebrikler, seviyeyi bitirdin!" : "Canların bitti!";
+  $("endText").textContent = `Seviye ${st.level} · Puan: ${st.score}` + (rec?" · Yeni rekor!":` · En iyi: ${prev}`);
+}
+
+$("form").addEventListener("submit",e=>{
+  e.preventDefault();
+  const raw=$("answer").value.trim().replace(",",".");
+  if(raw==="" || isNaN(+raw)) return;
+  judge(+raw);
+});
+document.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>start(+b.dataset.level));
+$("again").onclick=()=>start(st.level);
+$("toMenu").onclick=()=>{ $("end").classList.add("hidden"); $("menu").classList.remove("hidden"); showBest(); };
+showBest();
+</script>
+</body>
+</html>
