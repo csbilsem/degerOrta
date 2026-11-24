@@ -122,7 +122,7 @@ export const KARAKTERLER = [
     diyalog: basit('Miyav... (Pamuk topallıyor. Patisi incinmiş gibi görünüyor.)'),
   },
   {
-    kimlik: 'ayse', ad: 'Emine Nine', x: 50.5, z: 46.5, bakis: Math.PI / 2,
+    kimlik: 'ayse', ad: 'Emine Nine', x: 48.5, z: 61.6, bakis: 0,
     gorunum: { tur: 'kadin', yasli: true, ust: 0x5d6f8a, alt: 0x3e4a5c, ortu: 0xf4f4f4 },
     diyalog: basit(
       'Ah yavrum, hoş geldin. Dün geceki fırtına evimin güney duvarını yıktı.',

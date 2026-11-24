@@ -33,7 +33,8 @@ function gurultu2(x, z) {
 // ---------- Görevlerin kullandığı konumlar ----------
 const G0 = ZEMIN;
 export const DUVAR_BOSLUKLARI = [];
-for (const x of [45, 46]) for (const y of [G0 + 1, G0 + 2, G0 + 3]) DUVAR_BOSLUKLARI.push([x, y, 48]);
+// Emine Nine'nin evi bahçe kapısının yanında (x 44-50, z 55-60); fırtına yola bakan güney duvarı yıktı
+for (const x of [45, 46]) for (const y of [G0 + 1, G0 + 2, G0 + 3]) DUVAR_BOSLUKLARI.push([x, y, 60]);
 export const KONAK_KAPISI = [];
 for (const x of [63, 64, 65]) for (const y of [G0 + 1, G0 + 2, G0 + 3]) KONAK_KAPISI.push([x, y, 93]);
 export const KEDI_KAPLARI = [
@@ -177,6 +178,7 @@ export function koyuOlustur() {
 
   // Meydanın çaprazlarındaki köy evleri
   ev(42, 43, 7, 6, 3, 'd');
+  ev(44, 55, 7, 6, 3, 'g'); // Emine Nine'nin evi
   ev(80, 43, 7, 6, 3, 'b');
   ev(42, 80, 7, 6, 3, 'd');
   ev(80, 80, 7, 6, 3, 'b');

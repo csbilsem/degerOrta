@@ -461,3 +461,50 @@ body.dokunmatik #gorev-paneli { width: 250px; max-height: calc(100vh - 360px); }
 body.dokunmatik #gorev-paneli .g-alt,
 body.dokunmatik #gorev-paneli .g-cubuk { display: none; }
 body.dokunmatik #gorev-paneli .g-satir { padding: 3px 0; }
+
+/* ---------- Seslendirme düğmeleri ---------- */
+#okuma-dugme {
+  position: absolute; right: 252px; top: 12px;
+  width: 48px; height: 44px;
+  border: 3px solid rgba(255, 255, 255, 0.7); border-radius: 12px;
+  background: rgba(30, 36, 46, 0.7);
+  font-size: 20px; line-height: 1; cursor: pointer;
+  pointer-events: auto; touch-action: none;
+}
+#okuma-dugme.kapali { opacity: 0.5; }
+body.dokunmatik #okuma-dugme { right: 220px; top: 14px; }
+#hud.konusuyor #okuma-dugme { display: none; }
+.d-dinle {
+  position: absolute; right: 18px; top: -18px;
+  display: none;
+  padding: 4px 12px;
+  border: 2px solid #2f8f83; border-radius: 10px;
+  background: #fff; color: #1f6a61;
+  font: bold 14px inherit; cursor: pointer;
+}
+#diyalog.okunuyor .d-dinle { display: block; }
+
+/* ---------- Bilgisayar ekranında daha büyük arayüz ---------- */
+@media (min-width: 1000px) and (min-height: 640px) {
+  body:not(.dokunmatik) .yuva { width: 72px; height: 72px; border-width: 4px; border-radius: 10px; }
+  body:not(.dokunmatik) .yuva .kup { left: 16px; top: 15px; width: 32px; height: 32px; border-radius: 4px; }
+  body:not(.dokunmatik) .yuva .tus { font-size: 14px; left: 5px; top: 2px; }
+  body:not(.dokunmatik) .yuva .adet { font-size: 19px; right: 5px; bottom: 2px; }
+  body:not(.dokunmatik) #envanter { gap: 7px; padding: 8px; border-radius: 14px; }
+  body:not(.dokunmatik) #secili-ad { font-size: 19px; padding: 4px 16px; }
+  body:not(.dokunmatik) #mesaj { bottom: 158px; font-size: 19px; }
+  body:not(.dokunmatik) #konus-ipucu { font-size: 22px; padding: 10px 22px; }
+  body:not(.dokunmatik) #gorev-paneli { width: 320px; font-size: 15px; }
+  body:not(.dokunmatik) .g-bolge { font-size: 16px; }
+  body:not(.dokunmatik) .g-yonerge { font-size: 16px; }
+  body:not(.dokunmatik) .g-sayi { font-size: 14px; }
+  body:not(.dokunmatik) #harita:not(.buyuk) { width: 210px; height: 210px; }
+  body:not(.dokunmatik) #harita-ipucu { top: 232px; width: 216px; font-size: 13px; }
+  body:not(.dokunmatik) #ses-dugme { right: 236px; width: 54px; height: 50px; font-size: 23px; }
+  body:not(.dokunmatik) #okuma-dugme { right: 298px; width: 54px; height: 50px; font-size: 23px; }
+  body:not(.dokunmatik) #ust-sol .oyun-adi { font-size: 14px; }
+  body:not(.dokunmatik) #bolge-adi { font-size: 23px; }
+  body:not(.dokunmatik) #nisangah { width: 24px; height: 24px; }
+}
+/* Konuşma sırasında görev paneli ve harita yazısı kutunun üstüne binmesin */
+#hud.konusuyor #gorev-paneli, #hud.konusuyor #harita-ipucu { display: none; }

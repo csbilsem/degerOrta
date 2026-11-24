@@ -19,19 +19,31 @@ const ANLATICI = 'Anlatıcı';
 
 // Bir karar sorusunu düğümlere çevirir. Yanlış seçimde açıklama gösterilir ve
 // soruya geri dönülür; doğru seçimde tepki gösterilip `sonra` düğümüne geçilir.
-function soru(c, dugumler, ad, { konusan, metin, secenekler, sonra, dogruGiris, ozet }) {
+// Seçeneklerin sırası her konuşmada karıştırılır; doğru cevap hep aynı yerde olmaz.
+// (Yanlış cevaptan sonra soruya dönülünce sıra değişmez; aynı konuşma nesnesi kullanılır.)
+function karistir(dizi) {
+  const d = dizi.map((s, i) => ({ ...s, _i: i }));
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+function soru(c, dugumler, ad, { konusan, metin, secenekler: asil, sonra, dogruGiris, ozet }) {
+  const secenekler = karistir(asil);
   dugumler[ad] = {
     konusan,
     metin,
-    secenekler: secenekler.map((s, i) => ({
+    secenekler: secenekler.map((s) => ({
       metin: s.metin,
-      git: s.dogru ? `${ad}_dogru` : `${ad}_yanlis${i}`,
-      etki: () => c.karar(ad, i, !!s.dogru, ozet || (Array.isArray(metin) ? metin.join(' ') : metin), s.metin),
+      git: s.dogru ? `${ad}_dogru` : `${ad}_yanlis${s._i}`,
+      etki: () => c.karar(ad, s._i, !!s.dogru, ozet || (Array.isArray(metin) ? metin.join(' ') : metin), s.metin),
     })),
   };
-  secenekler.forEach((s, i) => {
+  secenekler.forEach((s) => {
     if (s.dogru) dugumler[`${ad}_dogru`] = { konusan: s.konusan, metin: s.tepki, git: sonra, giris: dogruGiris };
-    else dugumler[`${ad}_yanlis${i}`] = { konusan: s.konusan ?? ANLATICI, metin: s.tepki, git: ad };
+    else dugumler[`${ad}_yanlis${s._i}`] = { konusan: s.konusan ?? ANLATICI, metin: s.tepki, git: ad };
   });
 }
 
@@ -262,7 +274,7 @@ export const GOREVLER = [
     bolge: 2,
     ad: 'Komşunun Evi',
     kim: 'Emine Nine',
-    yonerge: 'Bahçenin kuzeydoğusundaki evin önünde Emine Nine ile konuş.',
+    yonerge: 'Bahçe kapısının hemen yanındaki evin önünde Emine Nine ile konuş.',
     hedefler: ['ayse'],
     diyalog(k, c) {
       if (k.kimlik !== 'ayse') return null;
@@ -306,7 +318,7 @@ export const GOREVLER = [
     insa: {
       hedefler: DUVAR_BOSLUKLARI,
       varsayilan: B.DUVAR,
-      merkez: { x: 46, y: 11, z: 50.5 },
+      merkez: { x: 46, y: 11, z: 61.5 },
       adim: (n, t) => `Emine Nine'nin duvarını onar: ${n}/${t}`,
       hatirlatma: 'Evin güney duvarındaki işaretli boşlukları sıva bloklarıyla doldurabilir misin yavrum?',
       bitis: 'Emine Nine: "Evim yeniden sıcacık oldu! Komşusuna yardım edenin gönlü de güzelleşir."',

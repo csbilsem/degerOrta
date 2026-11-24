@@ -22,6 +22,12 @@ export class Diyalog {
       e.stopPropagation();
       this.sec(Number(el.dataset.i));
     });
+    this.dinleEl = kok.querySelector('.d-dinle');
+    this.dinleEl.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.seslendir();
+    });
     kok.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       this.ilerle();
@@ -43,6 +49,7 @@ export class Diyalog {
     this.acik = false;
     this.karakter = null;
     this.kok.classList.add('gizli');
+    if (this.okuyucu) this.okuyucu.sus();
     if (this.kapaninca) this.kapaninca();
   }
 
@@ -54,7 +61,19 @@ export class Diyalog {
     this.sayfa = 0;
     this.secili = 0;
     this._ciz();
+    this.seslendir();
     if (d.giris) d.giris();
+  }
+
+  // Görünen sayfayı (ve varsa seçenekleri) sesli okur
+  seslendir() {
+    if (!this.okuyucu || !this.acik) return;
+    const adKoy = (m) => m.replaceAll('{ad}', this.oyuncuAdi || 'evladım');
+    let metin = adKoy(this.sayfalar[this.sayfa]);
+    if (this.seceneklerGorunur) {
+      metin += ' ... ' + this.dugum.secenekler.map((s, i) => `${i + 1}: ${adKoy(s.metin)}`).join(' ... ');
+    }
+    this.okuyucu.oku(metin);
   }
 
   get seceneklerGorunur() {
@@ -68,6 +87,7 @@ export class Diyalog {
     if (this.sayfa < this.sayfalar.length - 1) {
       this.sayfa++;
       this._ciz();
+      this.seslendir();
     } else if (this.dugum.secenekler) {
       this.sec(this.secili);
     } else {
