@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Kalbin Kahramanları</title>
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
   <canvas id="oyun"></canvas>
@@ -21,7 +21,6 @@
     <div id="konus-ipucu" class="gizli"></div>
     <div id="diyalog" class="gizli">
       <div class="d-ad"></div>
-      <button class="d-dinle" title="Tekrar dinle (O)" aria-label="Tekrar dinle">🔈 Dinle</button>
       <div class="d-metin"></div>
       <div class="d-secenekler"></div>
       <div class="d-ipucu"></div>
@@ -32,7 +31,6 @@
     </div>
     <div id="gorev-paneli"></div>
     <button id="ses-dugme" title="Sesi aç / kapat (N)" aria-label="Sesi aç / kapat">🔊</button>
-    <button id="okuma-dugme" title="Konuşmaları sesli oku (O)" aria-label="Seslendirme">🗣️</button>
     <canvas id="harita" width="340" height="340"></canvas>
     <div id="harita-ipucu"></div>
   </div>
@@ -61,7 +59,7 @@
         <li><b>Zıpla:</b> zıpla</li>
         <li><b>Alttaki kutular:</b> blok seç</li>
         <li><b>Haritaya dokun:</b> yakınlaştır / büyüt</li>
-        <li><b>🔊 / 🗣️:</b> ses / seslendirme</li>
+        <li><b>🔊:</b> sesi aç / kapat</li>
         <li><b>II:</b> duraklat</li>
       </ul>
       <ul class="tuslar klavye-yardim">
@@ -75,7 +73,6 @@
         <li><kbd>1</kbd>–<kbd>9</kbd> / tekerlek: blok seç</li>
         <li><kbd>M</kbd> haritayı yakınlaştır / büyüt</li>
         <li><kbd>N</kbd> sesi aç / kapat</li>
-        <li><kbd>O</kbd> seslendirmeyi aç / kapat</li>
         <li><kbd>V</kbd> kamerayı değiştir</li>
         <li><kbd>Esc</kbd> duraklat</li>
       </ul>
@@ -88,13 +85,12 @@
       <div class="kart-alt">
         <button id="ses-muzik" class="kucuk-dugme">Müzik: Açık</button>
         <button id="ses-efekt" class="kucuk-dugme">Sesler: Açık</button>
-        <button id="seslendirme" class="kucuk-dugme">Seslendirme: Açık</button>
         <button id="son-ac" class="kucuk-dugme gizli">Son Ekran</button>
         <button id="ozet-ac" class="kucuk-dugme">Öğretmen Özeti</button>
         <button id="sifirla" class="kucuk-dugme gizli">Baştan Başla</button>
       </div>
       <p id="hata" class="gizli"></p>
-      <p class="surum">sürüm 0.8.0</p>
+      <p class="surum">sürüm 0.8.1</p>
     </div>
   </div>
 
@@ -151,6 +147,6 @@
       });
     })();
   </script>
-  <script type="module" src="js/main.js?v=9" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
+  <script type="module" src="js/main.js?v=10" onerror="kalbinKahramanlariHata('Oyun dosyası indirilemedi (js/main.js).')"></script>
 </body>
 </html>

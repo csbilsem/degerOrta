@@ -10,7 +10,6 @@ import { KARAKTERLER } from './data/karakterler.js';
 import { Gorevler } from './quests.js';
 import { Harita } from './minimap.js';
 import { Ses } from './audio.js';
-import { Seslendirme } from './voice.js';
 import { sonEkraniDoldur, ozetiDoldur, csvUret } from './endscreen.js';
 import { BOLGE_RENKLERI } from './quests.js';
 
@@ -61,8 +60,6 @@ const karakterler = new Karakterler(dunya, KARAKTERLER);
 sahne.add(karakterler.grup);
 const diyalog = new Diyalog($('diyalog'));
 diyalog.ses = sesCal;
-const okuyucu = new Seslendirme();
-diyalog.okuyucu = okuyucu;
 let yakinKarakter = null;
 let konusulan = null;
 diyalog.kapaninca = () => {
@@ -328,33 +325,6 @@ function sesiAcKapat() {
   mesajGoster(acik ? 'Ses kapatıldı.' : 'Ses açıldı.', 1500);
   if (!acik) ses.cal('dogru');
 }
-// Seslendirme: kart düğmesi, oyun içi 🗣️ düğmesi ve O tuşu
-function okumaDugmeleri() {
-  const yok = okuyucu.destek && !okuyucu.turkceVar;
-  $('seslendirme').textContent = `Seslendirme: ${okuyucu.acik ? 'Açık' : 'Kapalı'}${yok ? ' (Türkçe ses yok)' : ''}`;
-  $('seslendirme').classList.toggle('kapali', !okuyucu.acik || yok);
-  $('okuma-dugme').classList.toggle('kapali', !okuyucu.acik || yok);
-  $('diyalog').classList.toggle('okunuyor', okuyucu.acik && okuyucu.turkceVar);
-}
-okuyucu.degisince = okumaDugmeleri;
-function seslendirmeAcKapat() {
-  okuyucu.kilidiAc();
-  okuyucu.ayarla(!okuyucu.acik);
-  okumaDugmeleri();
-  if (!okuyucu.destek) return mesajGoster('Bu tarayıcı seslendirmeyi desteklemiyor.', 3500);
-  if (!okuyucu.turkceVar) {
-    return mesajGoster('Bu cihazda Türkçe ses bulunamadı. Bilgisayarda Microsoft Edge tarayıcısı ya da iPad kullanabilirsin.', 5000);
-  }
-  mesajGoster(okuyucu.acik ? 'Seslendirme açıldı: konuşmalar sesli okunacak.' : 'Seslendirme kapatıldı.', 2200);
-  if (okuyucu.acik) diyalog.acik ? diyalog.seslendir() : okuyucu.oku('Seslendirme açık.');
-}
-$('seslendirme').addEventListener('click', seslendirmeAcKapat);
-$('okuma-dugme').addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  seslendirmeAcKapat();
-});
-okumaDugmeleri();
 $('ses-dugme').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -395,7 +365,6 @@ function baslat() {
   adiUygula();
   adKutusu.blur();
   ses.baslat();
-  okuyucu.kilidiAc();
   katman = 'giris';
   if (dokunmatik || !tuval.requestPointerLock) return surukleModunaGec();
   try {
@@ -514,13 +483,11 @@ document.addEventListener('keydown', (e) => {
     else if (e.code === 'KeyW' || e.code === 'ArrowUp') diyalog.secimiKaydir(-1);
     else if (e.code === 'KeyS' || e.code === 'ArrowDown') diyalog.secimiKaydir(1);
     else if (/^(Digit|Numpad)[1-9]$/.test(e.code)) diyalog.sec(Number(e.code.slice(-1)) - 1);
-    else if (e.code === 'KeyO') diyalog.seslendir();
     return;
   }
   if (e.code === 'KeyE' && !e.repeat) return konus();
   if (e.code === 'KeyM' && !e.repeat) return haritaGorunumu();
   if (e.code === 'KeyN' && !e.repeat) return sesiAcKapat();
-  if (e.code === 'KeyO' && !e.repeat) return seslendirmeAcKapat();
   if (e.code === 'KeyV' && !e.repeat) oyuncu.ucuncuSahis = !oyuncu.ucuncuSahis;
   if (!e.repeat && /^Digit[1-9]$/.test(e.code)) {
     envanter.sec(Number(e.code.slice(5)) - 1);
@@ -707,4 +674,4 @@ function kare(simdi) {
 requestAnimationFrame(kare);
 
 // Sonraki aşamalar ve denemeler için dışa açılan nesne
-window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus, gorevler, harita, ses, okuyucu, sonEkraniAc, ozetiAc, konfetiPatlat };
+window.kalbinKahramanlari = { dunya, oyuncu, sahne, kamera, bolgeyiRenklendir, surukleModunaGec, envanter, etkilesim, karakterler, diyalog, konus, gorevler, harita, ses, sonEkraniAc, ozetiAc, konfetiPatlat };

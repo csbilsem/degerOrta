@@ -27,7 +27,6 @@ python3 sunucu.py
 | 1–9 / fare tekerleği | Çantadan blok seç |
 | M | Harita görünümü: bütün köy / yakın / büyük harita |
 | N | Sesi aç / kapat (oyun içinde 🔊 düğmesi de var) |
-| O | Seslendirmeyi aç / kapat (konuşmadayken: tekrar dinle) |
 | V | Birinci / üçüncü şahıs kamera |
 | Esc | Duraklat |
 | F3 | Bilgi ekranı (FPS, konum) |
